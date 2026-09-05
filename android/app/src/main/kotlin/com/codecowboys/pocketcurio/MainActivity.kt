@@ -1,4 +1,4 @@
-package com.codecowboys.pocket_curio
+package com.codecowboys.pocketcurio
 
 import io.flutter.embedding.android.FlutterActivity
 
