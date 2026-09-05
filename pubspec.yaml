@@ -1,0 +1,25 @@
+name: pocket_curio
+description: "Pocket Curio — a souvenir is a place + a memory. A private, on-device souvenir collection journal. © Code Cowboys LLC."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  # Matches cc_core's floor — all CC apps build with the same local SDK
+  # (~/sdks/flutter 3.44.9, in step with Codemagic).
+  sdk: ^3.12.2
+
+dependencies:
+  cc_core:
+    git:
+      url: https://github.com/Mark-Code-Cowboys/cc_core.git
+      ref: v0.6.1
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

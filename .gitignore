@@ -1,0 +1,58 @@
+# Claude Code local settings
+.claude/
+
+# Local cc_core path override — the git tag ref in pubspec.yaml is what ships.
+pubspec_overrides.yaml
+
+# Build prompt stays local
+prompt-6-pocket-curio.md
+
+# IntelliJ / Android Studio
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# VS Code
+.vscode/
+
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+
+# Apps pin dependencies; keep the lockfile committed.
+!pubspec.lock
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio build artifacts
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Android signing — never commit keys
+/android/key.properties
+*.jks
+*.keystore
