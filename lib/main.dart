@@ -8,6 +8,7 @@ import 'core/export/share_plus_launcher.dart';
 import 'core/photos/photo_providers.dart';
 import 'core/photos/photo_store.dart';
 import 'data/database/app_database.dart';
+import 'data/database/seed.dart';
 import 'data/providers.dart';
 import 'features/scan/scan_providers.dart';
 
@@ -15,6 +16,11 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final db = AppDatabase.open();
   final photos = await PhotoStore.open();
+
+  // Screenshot data: `flutter run --dart-define=DEMO_SEED=true`
+  if (const bool.fromEnvironment('DEMO_SEED')) {
+    await seedDemoData(db, photos);
+  }
 
   runApp(
     ProviderScope(

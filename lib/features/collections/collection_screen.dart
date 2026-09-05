@@ -14,11 +14,22 @@ import '../monetization/gate.dart';
 import '../scan/shelf_scan_flow.dart';
 import 'collection_composer_screen.dart';
 
+/// What a freshly named shelf should do the moment it appears — the
+/// onboarding fork lands here with the first move already chosen.
+enum ShelfStart { addItem, scanShelf }
+
 /// The digital display shelf: a photo grid of one collection.
 class CollectionScreen extends ConsumerStatefulWidget {
-  const CollectionScreen({super.key, required this.collectionId});
+  const CollectionScreen({
+    super.key,
+    required this.collectionId,
+    this.initialAction,
+  });
 
   final int collectionId;
+
+  /// Runs once after the first frame; null does nothing.
+  final ShelfStart? initialAction;
 
   @override
   ConsumerState<CollectionScreen> createState() => _CollectionScreenState();
@@ -26,6 +37,23 @@ class CollectionScreen extends ConsumerStatefulWidget {
 
 class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   var _sort = ItemSort.byDate;
+
+  @override
+  void initState() {
+    super.initState();
+    final start = widget.initialAction;
+    if (start != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        switch (start) {
+          case ShelfStart.addItem:
+            _addItem();
+          case ShelfStart.scanShelf:
+            _scanShelf();
+        }
+      });
+    }
+  }
 
   Future<void> _confirmDelete(Collection collection) async {
     final ok = await showDialog<bool>(

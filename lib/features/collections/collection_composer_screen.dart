@@ -6,7 +6,8 @@ import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
 import '../../data/repositories/collection_repository.dart';
 
-/// Start or rename a shelf. Pass [existing] to edit.
+/// Start or rename a shelf. Pass [existing] to edit. Pops with the
+/// collection id on save, null when dismissed.
 class CollectionComposerScreen extends ConsumerStatefulWidget {
   const CollectionComposerScreen({super.key, this.existing});
 
@@ -44,12 +45,15 @@ class _CollectionComposerScreenState
     );
     final repo = ref.read(collectionRepositoryProvider);
     final existing = widget.existing;
+    final int id;
     if (existing == null) {
-      await repo.createCollection(draft);
+      id = await repo.createCollection(draft);
     } else {
+      id = existing.id;
       await repo.updateCollection(existing.id, draft);
     }
-    if (mounted) Navigator.of(context).pop();
+    // Resolves to the collection id so a caller can land on the shelf.
+    if (mounted) Navigator.of(context).pop(id);
   }
 
   @override
