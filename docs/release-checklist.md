@@ -41,11 +41,10 @@ Work top to bottom; nothing ships with an unchecked box above it.
 - [ ] DEMO_SEED build only for screenshots — never the uploaded AAB
 - [ ] Dark theme spot-check: home, shelf, detail, composer, crop screen,
       review grid, paywall, map
-- [ ] iOS lane (Codemagic, later): raise `IPHONEOS_DEPLOYMENT_TARGET`
-      from 13.0 to 15.5 and the Podfile platform to match —
-      `google_mlkit_text_recognition` requires it (Course Ledger has the
-      same pending change); then confirm the camera and photo-library
-      prompts show the plist copy
+- [ ] iOS lane (Codemagic, later): deployment target is already 15.5
+      in the Xcode project and `ios/Podfile` (`google_mlkit_text_recognition`
+      requires it); run `pod install` there, then confirm the camera and
+      photo-library prompts show the plist copy
 
 ## Store
 
