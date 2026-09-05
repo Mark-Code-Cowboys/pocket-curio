@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Pocket Curio photographs your souvenirs. Photos stay on this phone.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Pocket Curio can add a souvenir photo from your library. Photos stay on this phone.</string>
 </dict>
 </plist>

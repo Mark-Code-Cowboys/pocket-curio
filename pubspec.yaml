@@ -18,6 +18,11 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_riverpod: ^3.4.2
+  # Camera + library capture; the composer is camera-first.
+  image_picker: ^1.2.3
+  path: ^1.9.1
+  # App-private photo store under the documents directory.
+  path_provider: ^2.1.6
   stream_transform: ^2.1.1
 
 dev_dependencies:

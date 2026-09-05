@@ -23,6 +23,23 @@ number format). Empty barrels: `journal/`, `trends/`, `onboarding/`,
 
 ## New generic candidates surfaced by this app
 
+- **PhotoStore + PhotoCapture** (`journal/` or a new `photos/`): Pocket
+  Curio is the first CC app with camera capture. `lib/core/photos/` holds
+  an app-private store (relative paths under the documents dir so iOS
+  container moves don't break rows; import/resolve/delete) and a
+  `PhotoCapture` seam over image_picker with a test fake. Every
+  photo-first CC app (Course Ledger's round photos, Table Encore's dishes)
+  wants exactly this; second consumer = extract. Note: the store does its
+  IO synchronously behind a Future API on purpose — dart:io futures never
+  resolve inside flutter_test's fake-async zone, and one ≤2048px JPEG
+  copies in milliseconds.
+- **Lazy-list widget-test lessons** (core test docs): one-shot reads must
+  be `get()`, never `watch().first` (stalls under the widget-test zone);
+  screens under test go above a blank root route so self-popping
+  composers don't empty the Navigator; ListView children below the fold
+  aren't built in the 800×600 test viewport. Course Ledger will hit all
+  three the moment it wires photos.
+
 - **Coverage map widget** (`trends/`): Phase E "map fill" — region fill
   (states/countries) + optional pins. Course Ledger's "played map" is the
   same widget; Hitch Post and Loadbook will want it too. The GOT map code

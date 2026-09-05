@@ -47,16 +47,17 @@ class CollectionRepository {
   /// Every collection with its item count and resolved cover photo, A-Z.
   Stream<List<CollectionSummary>> watchSummaries() {
     final itemCount = _db.items.id.count();
-    final query = _db.select(_db.collections).join([
-      leftOuterJoin(
-        _db.items,
-        _db.items.collectionId.equalsExp(_db.collections.id),
-        useColumns: false,
-      ),
-    ])
-      ..addColumns([itemCount])
-      ..groupBy([_db.collections.id])
-      ..orderBy([OrderingTerm.asc(_db.collections.name.lower())]);
+    final query =
+        _db.select(_db.collections).join([
+            leftOuterJoin(
+              _db.items,
+              _db.items.collectionId.equalsExp(_db.collections.id),
+              useColumns: false,
+            ),
+          ])
+          ..addColumns([itemCount])
+          ..groupBy([_db.collections.id])
+          ..orderBy([OrderingTerm.asc(_db.collections.name.lower())]);
 
     // Newest item photo per collection, for tiles without an explicit
     // cover. A second query keeps the join above a plain count.
@@ -76,11 +77,16 @@ class CollectionRepository {
         return CollectionSummary(
           collection,
           itemCount: row.read(itemCount)!,
-          coverPhotoPath:
-              collection.coverPhotoPath ?? latest[collection.id],
+          coverPhotoPath: collection.coverPhotoPath ?? latest[collection.id],
         );
       }).toList();
     });
+  }
+
+  /// One-shot read, for actions that need the current row once.
+  Future<Collection?> getCollection(int id) {
+    final query = _db.select(_db.collections)..where((c) => c.id.equals(id));
+    return query.getSingleOrNull();
   }
 
   Stream<Collection?> watchCollection(int id) {
@@ -101,13 +107,15 @@ class CollectionRepository {
   }
 
   Future<void> updateCollection(int id, CollectionDraft d) {
-    return (_db.update(_db.collections)..where((c) => c.id.equals(id)))
-        .write(_companion(d));
+    return (_db.update(
+      _db.collections,
+    )..where((c) => c.id.equals(id))).write(_companion(d));
   }
 
   Future<void> setCoverPhoto(int id, String? path) {
-    return (_db.update(_db.collections)..where((c) => c.id.equals(id)))
-        .write(CollectionsCompanion(coverPhotoPath: Value(path)));
+    return (_db.update(_db.collections)..where((c) => c.id.equals(id))).write(
+      CollectionsCompanion(coverPhotoPath: Value(path)),
+    );
   }
 
   /// Items cascade. Photo *files* are cleaned up by the composer layer

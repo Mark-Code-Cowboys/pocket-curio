@@ -34,8 +34,8 @@ class Collections extends Table {
 
   @override
   List<String> get customConstraints => [
-        "CHECK (kind = 'other' OR other_label IS NULL)",
-      ];
+    "CHECK (kind = 'other' OR other_label IS NULL)",
+  ];
 }
 
 /// One souvenir. The photo IS the record; place is what's printed on it
@@ -68,16 +68,15 @@ class AppDatabase extends _$AppDatabase {
 
   /// Opens the on-device database. All data stays local; nothing leaves
   /// the phone.
-  factory AppDatabase.open() =>
-      AppDatabase(driftDatabase(name: 'pocketcurio'));
+  factory AppDatabase.open() => AppDatabase(driftDatabase(name: 'pocketcurio'));
 
   @override
   int get schemaVersion => 1;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        beforeOpen: (details) async {
-          await customStatement('PRAGMA foreign_keys = ON');
-        },
-      );
+    beforeOpen: (details) async {
+      await customStatement('PRAGMA foreign_keys = ON');
+    },
+  );
 }

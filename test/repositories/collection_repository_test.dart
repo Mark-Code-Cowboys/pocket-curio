@@ -17,56 +17,65 @@ void main() {
 
   tearDown(() => db.close());
 
-  test('createCollection stores fields and count feeds the free limit',
-      () async {
-    await repo.createCollection(collectionDraft(name: 'Fridge magnets'));
-    await repo.createCollection(
-      collectionDraft(name: 'Keychains', kind: CollectionKind.keychain),
-    );
+  test(
+    'createCollection stores fields and count feeds the free limit',
+    () async {
+      await repo.createCollection(collectionDraft(name: 'Fridge magnets'));
+      await repo.createCollection(
+        collectionDraft(name: 'Keychains', kind: CollectionKind.keychain),
+      );
 
-    expect(await repo.count(), 2);
-    final all = await repo.watchCollections().first;
-    final magnets = all.singleWhere((c) => c.name == 'Fridge magnets');
-    expect(magnets.kind, CollectionKind.magnet);
-    expect(magnets.otherLabel, isNull);
-    expect(magnets.coverPhotoPath, isNull);
-  });
+      expect(await repo.count(), 2);
+      final all = await repo.watchCollections().first;
+      final magnets = all.singleWhere((c) => c.name == 'Fridge magnets');
+      expect(magnets.kind, CollectionKind.magnet);
+      expect(magnets.otherLabel, isNull);
+      expect(magnets.coverPhotoPath, isNull);
+    },
+  );
 
   test('watchCollections orders A-Z, case-insensitively', () async {
     await repo.createCollection(collectionDraft(name: 'shot glasses'));
     await repo.createCollection(collectionDraft(name: 'Keychains'));
     await repo.createCollection(collectionDraft(name: 'Postcards'));
 
-    final names =
-        (await repo.watchCollections().first).map((c) => c.name).toList();
+    final names = (await repo.watchCollections().first)
+        .map((c) => c.name)
+        .toList();
     expect(names, ['Keychains', 'Postcards', 'shot glasses']);
   });
 
-  test('other kind keeps its label; named kinds drop a stray label',
-      () async {
-    final otherId = await repo.createCollection(collectionDraft(
-      name: 'Snow globes',
-      kind: CollectionKind.other,
-      otherLabel: 'snow globe',
-    ));
-    final pinId = await repo.createCollection(collectionDraft(
-      name: 'Pins',
-      kind: CollectionKind.pin,
-      otherLabel: 'should be dropped',
-    ));
+  test('other kind keeps its label; named kinds drop a stray label', () async {
+    final otherId = await repo.createCollection(
+      collectionDraft(
+        name: 'Snow globes',
+        kind: CollectionKind.other,
+        otherLabel: 'snow globe',
+      ),
+    );
+    final pinId = await repo.createCollection(
+      collectionDraft(
+        name: 'Pins',
+        kind: CollectionKind.pin,
+        otherLabel: 'should be dropped',
+      ),
+    );
 
-    expect((await repo.watchCollection(otherId).first)?.otherLabel,
-        'snow globe');
+    expect(
+      (await repo.watchCollection(otherId).first)?.otherLabel,
+      'snow globe',
+    );
     expect((await repo.watchCollection(pinId).first)?.otherLabel, isNull);
   });
 
-  test('watchSummaries counts items and resolves the cover photo',
-      () async {
+  test('watchSummaries counts items and resolves the cover photo', () async {
     final items = ItemRepository(db);
-    final emptyId =
-        await repo.createCollection(collectionDraft(name: 'Empty shelf'));
-    final fallbackId =
-        await repo.createCollection(collectionDraft(name: 'Magnets'));
+    final emptyId = await repo.createCollection(
+      collectionDraft(name: 'Empty shelf'),
+    );
+    final fallbackId = await repo.createCollection(
+      collectionDraft(name: 'Magnets'),
+    );
     final explicitId = await repo.createCollection(
       collectionDraft(name: 'Keychains', coverPhotoPath: 'covers/k.jpg'),
     );
@@ -76,20 +85,25 @@ void main() {
     await items.createItem(explicitId, itemDraft(photoPath: 'c.jpg'));
 
     final summaries = await repo.watchSummaries().first;
-    expect(summaries.map((s) => s.collection.name),
-        ['Empty shelf', 'Keychains', 'Magnets']);
+    expect(summaries.map((s) => s.collection.name), [
+      'Empty shelf',
+      'Keychains',
+      'Magnets',
+    ]);
 
     final empty = summaries.singleWhere((s) => s.collection.id == emptyId);
     expect(empty.itemCount, 0);
     expect(empty.coverPhotoPath, isNull);
 
-    final fallback =
-        summaries.singleWhere((s) => s.collection.id == fallbackId);
+    final fallback = summaries.singleWhere(
+      (s) => s.collection.id == fallbackId,
+    );
     expect(fallback.itemCount, 2);
     expect(fallback.coverPhotoPath, 'b.jpg', reason: 'newest item photo');
 
-    final explicit =
-        summaries.singleWhere((s) => s.collection.id == explicitId);
+    final explicit = summaries.singleWhere(
+      (s) => s.collection.id == explicitId,
+    );
     expect(explicit.itemCount, 1);
     expect(explicit.coverPhotoPath, 'covers/k.jpg');
   });

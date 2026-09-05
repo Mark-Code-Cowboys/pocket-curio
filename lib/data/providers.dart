@@ -29,10 +29,10 @@ final collectionProvider = StreamProvider.family<Collection?, int>(
 /// Shelf contents keyed by (collection, sort).
 final itemsForCollectionProvider =
     StreamProvider.family<List<Item>, ({int collectionId, ItemSort sort})>(
-  (ref, key) => ref
-      .watch(itemRepositoryProvider)
-      .watchItemsForCollection(key.collectionId, sort: key.sort),
-);
+      (ref, key) => ref
+          .watch(itemRepositoryProvider)
+          .watchItemsForCollection(key.collectionId, sort: key.sort),
+    );
 
 final itemProvider = StreamProvider.family<Item?, int>(
   (ref, id) => ref.watch(itemRepositoryProvider).watchItem(id),

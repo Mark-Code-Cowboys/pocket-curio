@@ -58,15 +58,23 @@ class ItemRepository {
       ..where((i) => i.collectionId.equals(collectionId))
       ..orderBy(switch (sort) {
         ItemSort.byDate => [
-            (i) => OrderingTerm.desc(coalesce([i.dateAcquired, i.createdAt])),
-            (i) => OrderingTerm.desc(i.id),
-          ],
+          (i) => OrderingTerm.desc(coalesce([i.dateAcquired, i.createdAt])),
+          (i) => OrderingTerm.desc(i.id),
+        ],
         ItemSort.byPlace => [
-            (i) => OrderingTerm.asc(i.place.lower()),
-            (i) => OrderingTerm.desc(i.id),
-          ],
+          (i) => OrderingTerm.asc(i.place.lower()),
+          (i) => OrderingTerm.desc(i.id),
+        ],
       });
     return query.watch();
+  }
+
+  /// One-shot read of a shelf, for cleanup passes (deleting a collection
+  /// removes each item's photo file).
+  Future<List<Item>> itemsForCollection(int collectionId) {
+    final query = _db.select(_db.items)
+      ..where((i) => i.collectionId.equals(collectionId));
+    return query.get();
   }
 
   Stream<Item?> watchItem(int id) {

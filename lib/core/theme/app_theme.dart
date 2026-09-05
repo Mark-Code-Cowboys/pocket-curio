@@ -10,10 +10,9 @@ abstract final class AppTheme {
   static const _curioViolet = Color(0xFF7A4E7E);
 
   static ThemeData light() {
-    final scheme = ColorScheme.fromSeed(seedColor: _curioViolet).copyWith(
-      primary: _curioViolet,
-      onPrimary: Colors.white,
-    );
+    final scheme = ColorScheme.fromSeed(
+      seedColor: _curioViolet,
+    ).copyWith(primary: _curioViolet, onPrimary: Colors.white);
     return _base(scheme);
   }
 

@@ -14,14 +14,14 @@ void main() {
   setUp(() async {
     db = makeTestDb();
     repo = ItemRepository(db);
-    collectionId =
-        await CollectionRepository(db).createCollection(collectionDraft());
+    collectionId = await CollectionRepository(
+      db,
+    ).createCollection(collectionDraft());
   });
 
   tearDown(() => db.close());
 
-  test('two-field minimum path: photo + place, everything else null',
-      () async {
+  test('two-field minimum path: photo + place, everything else null', () async {
     final id = await repo.createItem(
       collectionId,
       const ItemDraft(photoPath: 'items/0001.jpg', place: 'Key West'),
@@ -94,25 +94,29 @@ void main() {
     );
   });
 
-  test('byDate sorts newest acquired first, undated fall back to added',
-      () async {
-    final old = await repo.createItem(
-      collectionId,
-      itemDraft(place: 'Old', dateAcquired: DateTime(2015, 1, 1)),
-    );
-    final recent = await repo.createItem(
-      collectionId,
-      itemDraft(place: 'Recent', dateAcquired: DateTime(2026, 1, 1)),
-    );
-    // Undated: coalesces to createdAt (now), so it sorts newest of all.
-    final undated =
-        await repo.createItem(collectionId, itemDraft(place: 'Undated'));
+  test(
+    'byDate sorts newest acquired first, undated fall back to added',
+    () async {
+      final old = await repo.createItem(
+        collectionId,
+        itemDraft(place: 'Old', dateAcquired: DateTime(2015, 1, 1)),
+      );
+      final recent = await repo.createItem(
+        collectionId,
+        itemDraft(place: 'Recent', dateAcquired: DateTime(2026, 1, 1)),
+      );
+      // Undated: coalesces to createdAt (now), so it sorts newest of all.
+      final undated = await repo.createItem(
+        collectionId,
+        itemDraft(place: 'Undated'),
+      );
 
-    final items = await repo
-        .watchItemsForCollection(collectionId, sort: ItemSort.byDate)
-        .first;
-    expect(items.map((i) => i.id), [undated, recent, old]);
-  });
+      final items = await repo
+          .watchItemsForCollection(collectionId, sort: ItemSort.byDate)
+          .first;
+      expect(items.map((i) => i.id), [undated, recent, old]);
+    },
+  );
 
   test('byPlace sorts A-Z, case-insensitively', () async {
     await repo.createItem(collectionId, itemDraft(place: 'zion'));
@@ -126,8 +130,9 @@ void main() {
   });
 
   test('watchItemsForCollection is scoped to the shelf', () async {
-    final otherShelf = await CollectionRepository(db)
-        .createCollection(collectionDraft(name: 'Keychains'));
+    final otherShelf = await CollectionRepository(
+      db,
+    ).createCollection(collectionDraft(name: 'Keychains'));
     await repo.createItem(collectionId, itemDraft(place: 'Mine'));
     await repo.createItem(otherShelf, itemDraft(place: 'Theirs'));
 
@@ -135,18 +140,21 @@ void main() {
     expect(mine.map((i) => i.place), ['Mine']);
   });
 
-  test('count is per install across shelves; countInCollection per shelf',
-      () async {
-    final otherShelf = await CollectionRepository(db)
-        .createCollection(collectionDraft(name: 'Keychains'));
-    await repo.createItem(collectionId, itemDraft());
-    await repo.createItem(collectionId, itemDraft(photoPath: 'b.jpg'));
-    await repo.createItem(otherShelf, itemDraft(photoPath: 'c.jpg'));
+  test(
+    'count is per install across shelves; countInCollection per shelf',
+    () async {
+      final otherShelf = await CollectionRepository(
+        db,
+      ).createCollection(collectionDraft(name: 'Keychains'));
+      await repo.createItem(collectionId, itemDraft());
+      await repo.createItem(collectionId, itemDraft(photoPath: 'b.jpg'));
+      await repo.createItem(otherShelf, itemDraft(photoPath: 'c.jpg'));
 
-    expect(await repo.count(), 3);
-    expect(await repo.countInCollection(collectionId), 2);
-    expect(await repo.countInCollection(otherShelf), 1);
-  });
+      expect(await repo.count(), 3);
+      expect(await repo.countInCollection(collectionId), 2);
+      expect(await repo.countInCollection(otherShelf), 1);
+    },
+  );
 
   test('createItems inserts all or none', () async {
     final ids = await repo.createItems(collectionId, [
@@ -166,8 +174,7 @@ void main() {
     expect(await repo.count(), 2, reason: 'C rolled back with D');
   });
 
-  test('updateItem rewrites fields including clearing optional ones',
-      () async {
+  test('updateItem rewrites fields including clearing optional ones', () async {
     final id = await repo.createItem(
       collectionId,
       itemDraft(place: 'Boston', rating: 3, notes: 'first pass'),
@@ -194,9 +201,6 @@ void main() {
   });
 
   test('item cannot point at a missing collection', () async {
-    expect(
-      () => repo.createItem(9999, itemDraft()),
-      throwsA(anything),
-    );
+    expect(() => repo.createItem(9999, itemDraft()), throwsA(anything));
   });
 }
