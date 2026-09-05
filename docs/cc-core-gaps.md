@@ -6,10 +6,12 @@ Updated per phase; items move to "Done" when they land in a tagged cc_core.
 
 Baseline: cc_core v0.10.0 (pinned from Phase F; 0.9.0 for E, 0.8.0 for C–D, 0.6.1 through Phase B).
 Implemented modules: `paywall/` (complete, incl. `LifetimeTally` since
-0.7.0), `io/` (cloud backup, legacy Android prefs, CSV import), `text/`
-(fuzzy match, number format), `scan/` + `notebook_import/` (document
-scan + OCR + batch review, since 0.8.0). Empty barrels: `journal/`,
-`trends/`, `onboarding/`, `theme/`.
+0.7.0), `io/` (cloud backup, legacy Android prefs, CSV import/export,
+backup archive, share seam), `text/` (fuzzy match, number format),
+`scan/` + `notebook_import/` (document scan + OCR + batch review, since
+0.8.0), `trends/` (TrendGate, YearlyBars, SimpleLineChart,
+RegionTileGrid + usStateTiles, since 0.9.0), `onboarding/` (FirstRunFlag
++ OnboardingScaffold, since 0.10.0). Empty barrels: `journal/`, `theme/`.
 
 ## Empty modules this app needs, by phase
 
@@ -50,10 +52,10 @@ scan + OCR + batch review, since 0.8.0). Empty barrels: `journal/`,
   aren't built in the 800×600 test viewport. Course Ledger will hit all
   three the moment it wires photos.
 
-- **Coverage map widget** (`trends/`): Phase E "map fill" — region fill
-  (states/countries) + optional pins. Course Ledger's "played map" is the
-  same widget; Hitch Post and Loadbook will want it too. The GOT map code
-  is the seed.
+- **Coverage map widget** (`trends/`): realized as `RegionTileGrid` +
+  `usStateTiles` in 0.9.0 (the "GOT map code" the brief mentioned was
+  never found in any sibling repo). Still open from it: the continent
+  strip above, and pins.
 - **Guided crop** (`scan/`): `GuidedCropScreen` (drag boxes on one photo,
   tap to remove, normalized rects out) + `PhotoCropper` (dart:ui decode →
   drawImageRect → PNG, no image-processing dependency) are generic
