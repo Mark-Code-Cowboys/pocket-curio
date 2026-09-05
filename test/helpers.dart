@@ -17,6 +17,8 @@ import 'package:pocket_curio/data/providers.dart';
 import 'package:pocket_curio/data/repositories/collection_repository.dart';
 import 'package:pocket_curio/data/repositories/item_repository.dart';
 import 'package:pocket_curio/features/monetization/monetization_providers.dart';
+import 'package:pocket_curio/features/scan/photo_cropper.dart';
+import 'package:pocket_curio/features/scan/scan_providers.dart';
 import 'package:pocket_curio/features/shell/home_shell.dart';
 
 AppDatabase makeTestDb() => AppDatabase(NativeDatabase.memory());
@@ -56,6 +58,35 @@ class FakeCapture implements PhotoCapture {
   }
 }
 
+/// Stands in for the engine cropper: reports a fixed [size] and writes
+/// each crop as a copy of the source named crop_0.png, crop_1.png … so
+/// tests can key canned OCR lines to crops by path.
+class FakeCropper implements PhotoCropper {
+  FakeCropper({this.size = const Size(400, 300)}) {
+    dir = Directory.systemTemp.createTempSync('pocket_curio_cropper_');
+    addTearDown(() {
+      if (dir.existsSync()) dir.deleteSync(recursive: true);
+    });
+  }
+
+  final Size size;
+  late final Directory dir;
+  final rects = <Rect>[];
+
+  String pathFor(int index) => p.join(dir.path, 'crop_$index.png');
+
+  @override
+  Future<Size> imageSize(String path) async => size;
+
+  @override
+  Future<String> crop(String sourcePath, Rect normalized) async {
+    final out = pathFor(rects.length);
+    rects.add(normalized);
+    File(sourcePath).copySync(out);
+    return out;
+  }
+}
+
 /// The app wired to an in-memory database, temp photo store, and a
 /// free-tier fake entitlement service ([entitlements] overrides); [home]
 /// defaults to the shell. A given [home] is pushed above a blank root
@@ -66,9 +97,15 @@ Widget testApp({
   PhotoStore? store,
   PhotoCapture? capture,
   EntitlementService? entitlements,
+  TextRecognitionService? recognizer,
+  PhotoCropper? cropper,
   Widget? home,
 }) => ProviderScope(
   overrides: [
+    textRecognitionServiceProvider.overrideWithValue(
+      recognizer ?? FakeTextRecognitionService(),
+    ),
+    photoCropperProvider.overrideWithValue(cropper ?? FakeCropper()),
     databaseProvider.overrideWithValue(db),
     kvStoreProvider.overrideWithValue(InMemoryKeyValueStore()),
     entitlementServiceProvider.overrideWithValue(

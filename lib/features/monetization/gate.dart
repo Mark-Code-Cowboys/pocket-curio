@@ -38,3 +38,22 @@ Future<bool> ensureCanAdd(
     return showPaywallSheet(context, highlight: limit.usage(used).label);
   }
 }
+
+/// Batch flavor of [ensureCanAdd] for the shelf scan: may [count] more
+/// items be added? Under the cap or Pro → true; otherwise the paywall,
+/// and true only if they unlock from it.
+Future<bool> ensureCanAddItems(
+  BuildContext context,
+  WidgetRef ref,
+  int count,
+) async {
+  if (await ref.read(entitlementServiceProvider).isUnlimited()) return true;
+  final used = await ref.read(itemRepositoryProvider).lifetimeCreated();
+  if (used + count <= kFreeItemLimit) return true;
+  if (!context.mounted) return false;
+  final usage = itemFreeLimit.usage(used);
+  return showPaywallSheet(
+    context,
+    highlight: '${usage.label} — $count more won’t fit',
+  );
+}

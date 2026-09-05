@@ -1,3 +1,4 @@
+import 'package:cc_core/cc_core.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,6 +7,7 @@ import 'core/photos/photo_providers.dart';
 import 'core/photos/photo_store.dart';
 import 'data/database/app_database.dart';
 import 'data/providers.dart';
+import 'features/scan/scan_providers.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,6 +19,9 @@ Future<void> main() async {
       overrides: [
         databaseProvider.overrideWithValue(db),
         photoStoreProvider.overrideWithValue(photos),
+        textRecognitionServiceProvider.overrideWithValue(
+          MlKitTextRecognitionService(),
+        ),
       ],
       child: const PocketCurioApp(),
     ),

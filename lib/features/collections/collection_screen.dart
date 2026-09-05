@@ -9,7 +9,9 @@ import '../../data/providers.dart';
 import '../../data/repositories/item_repository.dart';
 import '../items/item_composer_screen.dart';
 import '../items/item_detail_screen.dart';
+import '../../core/photos/photo_capture.dart';
 import '../monetization/gate.dart';
+import '../scan/shelf_scan_flow.dart';
 import 'collection_composer_screen.dart';
 
 /// The digital display shelf: a photo grid of one collection.
@@ -72,6 +74,54 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     );
   }
 
+  /// One photo of the whole shelf or fridge, boxed by hand, read and
+  /// added in bulk. The converter for people with 40 magnets already up.
+  Future<void> _scanShelf() async {
+    final source = await showModalBottomSheet<PhotoSource>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const ListTile(
+              title: Text('Scan the whole shelf'),
+              subtitle: Text(
+                'One photo of everything. You box each souvenir, the '
+                'camera reads what’s printed, you check it.',
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_camera),
+              title: const Text('Take a photo of the shelf'),
+              onTap: () => Navigator.of(context).pop(PhotoSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text('Choose a photo'),
+              onTap: () => Navigator.of(context).pop(PhotoSource.library),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (source == null || !mounted) return;
+    final added = await runShelfScan(
+      context,
+      ref,
+      collectionId: widget.collectionId,
+      source: source,
+    );
+    if (added > 0 && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Added $added ${added == 1 ? 'souvenir' : 'souvenirs'} to the shelf.',
+          ),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final collection = ref.watch(collectionProvider(widget.collectionId)).value;
@@ -91,6 +141,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       appBar: AppBar(
         title: Text(collection.name),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.grid_on_outlined),
+            tooltip: 'Scan the whole shelf',
+            onPressed: _scanShelf,
+          ),
           PopupMenuButton<String>(
             onSelected: (v) => switch (v) {
               'edit' => Navigator.of(context).push(
@@ -150,6 +205,12 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 color: theme.colorScheme.onSurfaceVariant,
               ),
               textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            OutlinedButton.icon(
+              onPressed: _scanShelf,
+              icon: const Icon(Icons.grid_on_outlined),
+              label: const Text('Already have a shelf full? Scan it'),
             ),
           ],
         ),

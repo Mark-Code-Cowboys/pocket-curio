@@ -16,8 +16,8 @@ scan + OCR + batch review, since 0.8.0). Empty barrels: `journal/`,
 | Phase | Needs | cc_core module | Status |
 | --- | --- | --- | --- |
 | A | Item as a journal entry (photo IS the record; rating, notes, opt-in lat/lon) | `journal/` | empty — extraction from Table Encore not done (factory Phase 4). **Phase A decision:** `items` is an app-local Drift table carrying photoPath/rating/notes/lat/lng itself, same as Course Ledger; when `journal/` lands, migrate those columns to a core entry row keyed by item id |
-| D | Item photo → place-name transcription → confirm (auto-runs on composer photo) | `scan/` | empty (factory Phase 5) |
-| D | Shelf/fridge batch scan: one photo → detected items split to crops → review grid → bulk insert | `notebook_import/` | empty (factory Phase 5); whole-scene splitting is new — `notebook_import` assumes one item per page |
+| D | Item photo → place-name transcription → confirm (auto-runs on composer photo) | `scan/` | **done on 0.8.0** — `TextRecognitionService` + `OcrLine`; the per-app parser is `readPlace` (tallest line wins, every line offered verbatim) |
+| D | Shelf/fridge batch scan: one photo → crops → review grid → bulk insert | `notebook_import/` | **built app-side** as guided crop (user boxes each souvenir); `notebook_import`'s page-at-a-time `BatchReviewScreen` is list-shaped, the souvenir review needs a photo grid, so this app owns `GuidedCropScreen`, `PhotoCropper`, `ShelfReviewScreen` |
 | E | World/US fill map by item places + opt-in pins; counters (countries, states, items/yr, oldest) | `trends/` | empty (factory Phase 4) |
 | E | Export/backup archive behind entitlement, round-trip test | `io/` | README promises CSV/JSON export + zip backup/restore, but only cloud backup is coded (factory Phase 3 partially shipped) |
 | F | First-run flow (place+memory framing, fridge-scan fork), consent screen | `onboarding/` | empty (factory Phase 6) |
@@ -46,10 +46,17 @@ scan + OCR + batch review, since 0.8.0). Empty barrels: `journal/`,
   (states/countries) + optional pins. Course Ledger's "played map" is the
   same widget; Hitch Post and Loadbook will want it too. The GOT map code
   is the seed.
-- **Scene splitter** (`scan/`): one photo of many objects → N crops.
-  Batch flavor beyond `notebook_import`'s page-at-a-time model. If the
-  automatic split proves unreliable, the guided-crop fallback (user draws
-  boxes, extraction per box) is itself generic capture UX.
+- **Guided crop** (`scan/`): `GuidedCropScreen` (drag boxes on one photo,
+  tap to remove, normalized rects out) + `PhotoCropper` (dart:ui decode →
+  drawImageRect → PNG, no image-processing dependency) are generic
+  capture UX — any "one photo, many things" flow. Shipped here first;
+  automatic scene splitting deferred until the app has users. Test
+  lesson: drive the drag with `tester.dragFrom`, and record the box
+  corner on `onPanDown` — `onPanStart` fires ~18px past the finger.
+- **Photo-grid batch review** (`notebook_import/`): `BatchReviewScreen`
+  is a list; photo-first apps want a grid of thumbnails with one field
+  each. `ShelfReviewScreen` is the shape. Extract when a second app wants
+  it.
 - **Place-name field extraction schema** (`scan/`): the per-app schema
   here is a single `place` string transcribed from what's printed on the
   object. Smallest possible scan schema; a good first-consumer test.

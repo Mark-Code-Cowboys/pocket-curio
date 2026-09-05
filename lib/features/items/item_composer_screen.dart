@@ -11,6 +11,8 @@ import '../../core/widgets/rating_stars.dart';
 import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
 import '../../data/repositories/item_repository.dart';
+import '../scan/place_reader.dart';
+import '../scan/scan_providers.dart';
 
 /// Camera-first: the camera opens on arrival, then the place field takes
 /// focus. Photo + place is the whole required path; the memory fields
@@ -51,6 +53,11 @@ class _ItemComposerScreenState extends ConsumerState<ItemComposerScreen> {
   var _capturing = false;
   var _saved = false;
 
+  /// What the camera read off the photo, verbatim, for the chips under
+  /// the Place field. Empty until a photo is taken this session.
+  var _readLines = const <String>[];
+  var _placeFromPhoto = false;
+
   bool get _isNew => widget.existing == null;
 
   @override
@@ -84,11 +91,33 @@ class _ItemComposerScreenState extends ConsumerState<ItemComposerScreen> {
       // A retake on a new item, or a replacement on an edit, orphans the
       // earlier file. Edits only drop the old file once saved (see _save).
       if (_isNew && previous != null) await store.delete(previous);
+      final reading = await _readPlace(sourcePath);
       if (!mounted) return;
-      setState(() => _photoPath = imported);
+      setState(() {
+        _photoPath = imported;
+        _readLines = reading.lines;
+        // Prefill only an empty field, with exactly what was printed.
+        if (_place.text.trim().isEmpty && reading.primary != null) {
+          _place.text = reading.primary!;
+          _placeFromPhoto = true;
+        }
+      });
       if (_place.text.trim().isEmpty) _placeFocus.requestFocus();
     } finally {
       if (mounted) setState(() => _capturing = false);
+    }
+  }
+
+  /// Transcribes what's printed on the souvenir. A recognizer failure
+  /// just means no prefill — the user types the place as before.
+  Future<PlaceReading> _readPlace(String path) async {
+    try {
+      final lines = await ref
+          .read(textRecognitionServiceProvider)
+          .recognize(path);
+      return readPlace(lines);
+    } on Exception {
+      return PlaceReading.empty;
     }
   }
 
@@ -174,16 +203,23 @@ class _ItemComposerScreenState extends ConsumerState<ItemComposerScreen> {
               TextFormField(
                 controller: _place,
                 focusNode: _placeFocus,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Place',
                   hintText: 'What’s printed on it, or where it’s from',
+                  helperText: _placeFromPhoto
+                      ? 'Read from the photo — check the spelling.'
+                      : null,
                 ),
                 textCapitalization: TextCapitalization.words,
                 textInputAction: TextInputAction.done,
+                onChanged: (_) {
+                  if (_placeFromPhoto) setState(() => _placeFromPhoto = false);
+                },
                 validator: (v) => (v == null || v.trim().isEmpty)
                     ? 'Where is it from?'
                     : null,
               ),
+              if (_readLines.isNotEmpty) _readChips(theme),
               const SizedBox(height: 16),
               if (!_showMemory)
                 Align(
@@ -199,6 +235,34 @@ class _ItemComposerScreenState extends ConsumerState<ItemComposerScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  /// Every line the camera read, as chips: tap one to use it as the
+  /// place. Verbatim — nothing is suggested that wasn't printed.
+  Widget _readChips(ThemeData theme) {
+    final current = _place.text.trim().toLowerCase();
+    final others = _readLines.where((l) => l.toLowerCase() != current).toList();
+    if (others.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Wrap(
+        spacing: 6,
+        runSpacing: -6,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text('Also read:', style: theme.textTheme.labelSmall),
+          for (final line in others)
+            ActionChip(
+              label: Text(line),
+              visualDensity: VisualDensity.compact,
+              onPressed: () => setState(() {
+                _place.text = line;
+                _placeFromPhoto = true;
+              }),
+            ),
+        ],
       ),
     );
   }
