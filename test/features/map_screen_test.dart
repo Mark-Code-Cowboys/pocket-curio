@@ -96,7 +96,7 @@ void main() {
 
     expect(find.text('4 souvenirs'), findsOneWidget);
     expect(find.text('3 countries'), findsOneWidget);
-    expect(find.text('3 states'), findsOneWidget); // FL, MI, ALBERTA
+    expect(find.text('3 states and provinces'), findsOneWidget);
     expect(find.text('North America · Europe'), findsOneWidget);
     expect(find.text('The States'), findsOneWidget);
     expect(find.text('United States · 2'), findsOneWidget);

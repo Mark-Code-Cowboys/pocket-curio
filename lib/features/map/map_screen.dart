@@ -168,7 +168,10 @@ class _MapContent extends ConsumerWidget {
             children: [
               _StatChip(count: items.length, label: 'souvenirs'),
               _StatChip(count: facts.countryCounts.length, label: 'countries'),
-              _StatChip(count: facts.states.length, label: 'states'),
+              _StatChip(
+                count: facts.states.length,
+                label: 'states and provinces',
+              ),
             ],
           ),
         ),
