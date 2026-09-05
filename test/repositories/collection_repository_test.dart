@@ -1,3 +1,4 @@
+import 'package:cc_core/cc_core.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:pocket_curio/data/database/app_database.dart';
@@ -151,4 +152,38 @@ void main() {
     expect(await repo.count(), 0);
     expect(await items.count(), 0);
   });
+
+  test('deleting a collection never refunds a free-tier slot', () async {
+    final tally = LifetimeTally(
+      InMemoryKeyValueStore(),
+      key: 'collections_created_lifetime',
+    );
+    addTearDown(tally.dispose);
+    final tallied = CollectionRepository(db, tally: tally);
+
+    final id = await tallied.createCollection(collectionDraft());
+    expect(await tallied.lifetimeCreated(), 1);
+
+    await tallied.deleteCollection(id);
+    expect(await tallied.count(), 0);
+    expect(await tallied.lifetimeCreated(), 1); // the slot stays spent
+
+    await tallied.createCollection(collectionDraft(name: 'Again'));
+    expect(await tallied.lifetimeCreated(), 2);
+  });
+
+  test(
+    'lifetimeCreated floors at the live count on pre-tally installs',
+    () async {
+      await repo.createCollection(collectionDraft(name: 'A'));
+      await repo.createCollection(collectionDraft(name: 'B'));
+
+      final tally = LifetimeTally(
+        InMemoryKeyValueStore(),
+        key: 'collections_created_lifetime',
+      );
+      addTearDown(tally.dispose);
+      expect(await CollectionRepository(db, tally: tally).lifetimeCreated(), 2);
+    },
+  );
 }

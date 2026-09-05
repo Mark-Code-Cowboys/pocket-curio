@@ -9,6 +9,7 @@ import '../../data/providers.dart';
 import '../../data/repositories/item_repository.dart';
 import '../items/item_composer_screen.dart';
 import '../items/item_detail_screen.dart';
+import '../monetization/gate.dart';
 import 'collection_composer_screen.dart';
 
 /// The digital display shelf: a photo grid of one collection.
@@ -58,6 +59,19 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     if (mounted) Navigator.of(context).pop();
   }
 
+  /// Gated: the 26th souvenir on this phone opens the paywall instead;
+  /// unlocking mid-flow continues into the composer.
+  Future<void> _addItem() async {
+    if (!await ensureCanAdd(context, ref, GatedAction.addItem)) return;
+    if (!mounted) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ItemComposerScreen(collectionId: widget.collectionId),
+        fullscreenDialog: true,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final collection = ref.watch(collectionProvider(widget.collectionId)).value;
@@ -95,14 +109,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        // Phase C wraps this in the FreeLimit(25, 'items') gate.
-        onPressed: () => Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (_) =>
-                ItemComposerScreen(collectionId: widget.collectionId),
-            fullscreenDialog: true,
-          ),
-        ),
+        onPressed: _addItem,
         icon: const Icon(Icons.photo_camera),
         label: Text('Add ${collection.itemNoun}'),
       ),

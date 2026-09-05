@@ -1,3 +1,4 @@
+import 'package:cc_core/cc_core.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:pocket_curio/data/database/app_database.dart';
@@ -202,5 +203,29 @@ void main() {
 
   test('item cannot point at a missing collection', () async {
     expect(() => repo.createItem(9999, itemDraft()), throwsA(anything));
+  });
+
+  test('the item tally counts every shelf and every bulk row', () async {
+    final tally = LifetimeTally(
+      InMemoryKeyValueStore(),
+      key: 'items_created_lifetime',
+    );
+    addTearDown(tally.dispose);
+    final tallied = ItemRepository(db, tally: tally);
+    final otherShelf = await CollectionRepository(
+      db,
+    ).createCollection(collectionDraft(name: 'Keychains'));
+
+    final first = await tallied.createItem(collectionId, itemDraft());
+    await tallied.createItems(otherShelf, [
+      itemDraft(place: 'A', photoPath: 'a.jpg'),
+      itemDraft(place: 'B', photoPath: 'b.jpg'),
+    ]);
+    expect(await tallied.lifetimeCreated(), 3);
+
+    await tallied.deleteItem(first);
+    expect(await tallied.count(), 2);
+    expect(await tallied.lifetimeCreated(), 3); // the slot stays spent
+    expect(await tallied.watchLifetimeCreated().first, 3);
   });
 }

@@ -6,7 +6,7 @@ import '../../core/widgets/item_photo.dart';
 import '../../data/providers.dart';
 import '../../data/repositories/collection_repository.dart';
 import '../collections/collection_screen.dart';
-import '../monetization/free_limit.dart';
+import '../monetization/free_tier_counter.dart';
 
 /// The collections grid: each shelf as a tile with its cover photo and
 /// item count. Multiple shelves per install serves a household.
@@ -59,8 +59,6 @@ class HomeScreen extends ConsumerWidget {
   Widget _grid(BuildContext context, List<CollectionSummary> list) {
     final theme = Theme.of(context);
     final totalItems = list.fold(0, (sum, s) => sum + s.itemCount);
-    final collectionUsage = collectionFreeLimit.usage(list.length);
-    final itemUsage = itemFreeLimit.usage(totalItems);
     return CustomScrollView(
       slivers: [
         SliverPadding(
@@ -71,22 +69,8 @@ class HomeScreen extends ConsumerWidget {
                 countHeadline(items: totalItems, collections: list.length),
                 style: theme.textTheme.headlineSmall,
               ),
-              const SizedBox(height: 8),
-              // Phase C hides these for entitled users and gates the adds.
-              Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: [
-                  Chip(
-                    avatar: const Icon(Icons.grid_view_outlined, size: 18),
-                    label: Text(collectionUsage.label),
-                  ),
-                  Chip(
-                    avatar: const Icon(Icons.photo_camera_outlined, size: 18),
-                    label: Text(itemUsage.label),
-                  ),
-                ],
-              ),
+              // Invisible for Pro owners; taps open the paywall.
+              const FreeTierCounter(margin: EdgeInsets.only(top: 8)),
             ],
           ),
         ),

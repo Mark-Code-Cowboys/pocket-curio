@@ -1,3 +1,4 @@
+import 'package:cc_core/cc_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'database/app_database.dart';
@@ -10,12 +11,42 @@ final databaseProvider = Provider<AppDatabase>(
   (ref) => throw UnimplementedError('databaseProvider must be overridden'),
 );
 
+/// Overridden in tests with [InMemoryKeyValueStore].
+final kvStoreProvider = Provider<KeyValueStore>((ref) => SharedPrefsStore());
+
+/// Collections ever created on this device; feeds the free tier so a
+/// slot can't be recycled by delete-and-re-add.
+final collectionTallyProvider = Provider<LifetimeTally>((ref) {
+  final tally = LifetimeTally(
+    ref.watch(kvStoreProvider),
+    key: 'collections_created_lifetime',
+  );
+  ref.onDispose(tally.dispose);
+  return tally;
+});
+
+/// Items ever created on this device, across every shelf.
+final itemTallyProvider = Provider<LifetimeTally>((ref) {
+  final tally = LifetimeTally(
+    ref.watch(kvStoreProvider),
+    key: 'items_created_lifetime',
+  );
+  ref.onDispose(tally.dispose);
+  return tally;
+});
+
 final collectionRepositoryProvider = Provider<CollectionRepository>(
-  (ref) => CollectionRepository(ref.watch(databaseProvider)),
+  (ref) => CollectionRepository(
+    ref.watch(databaseProvider),
+    tally: ref.watch(collectionTallyProvider),
+  ),
 );
 
 final itemRepositoryProvider = Provider<ItemRepository>(
-  (ref) => ItemRepository(ref.watch(databaseProvider)),
+  (ref) => ItemRepository(
+    ref.watch(databaseProvider),
+    tally: ref.watch(itemTallyProvider),
+  ),
 );
 
 final collectionSummariesProvider = StreamProvider<List<CollectionSummary>>(

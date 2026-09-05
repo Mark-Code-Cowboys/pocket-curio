@@ -1,4 +1,8 @@
+import 'dart:math';
+
+import 'package:cc_core/cc_core.dart';
 import 'package:drift/drift.dart';
+import 'package:stream_transform/stream_transform.dart';
 
 import '../database/app_database.dart';
 
@@ -45,9 +49,14 @@ class ItemDraft {
 }
 
 class ItemRepository {
-  ItemRepository(this._db);
+  ItemRepository(this._db, {LifetimeTally? tally})
+    : _tally = tally; // ignore: prefer_initializing_formals
 
   final AppDatabase _db;
+
+  /// Items ever created here, across every shelf; null in plain repo
+  /// tests.
+  final LifetimeTally? _tally;
 
   /// Items on one shelf in the chosen order.
   Stream<List<Item>> watchItemsForCollection(
@@ -100,19 +109,51 @@ class ItemRepository {
     return row.read(countExp)!;
   }
 
-  Future<int> createItem(int collectionId, ItemDraft d) {
-    return _db.into(_db.items).insert(_companion(collectionId, d));
+  Future<int> createItem(int collectionId, ItemDraft d) async {
+    final id = await _db.into(_db.items).insert(_companion(collectionId, d));
+    await _tally?.recordCreated(liveCount: await count());
+    return id;
   }
 
   /// Bulk insert for the shelf/fridge batch scan (Phase D): all or none.
-  Future<List<int>> createItems(int collectionId, List<ItemDraft> drafts) {
-    return _db.transaction(() async {
+  /// Every inserted row spends a free-tier slot.
+  Future<List<int>> createItems(
+    int collectionId,
+    List<ItemDraft> drafts,
+  ) async {
+    final ids = await _db.transaction(() async {
       final ids = <int>[];
       for (final d in drafts) {
         ids.add(await _db.into(_db.items).insert(_companion(collectionId, d)));
       }
       return ids;
     });
+    if (_tally != null) {
+      // One raise for the batch: recordCreated floors at the live count
+      // on every call, so calling it per row would double count.
+      final live = await count();
+      await _tally.raiseTo(max(await _tally.value() + ids.length, live));
+    }
+    return ids;
+  }
+
+  /// Items ever created on this device across all shelves: the tally,
+  /// but never below the live row count. Feeds `FreeLimit(25, 'items')`
+  /// so deleting an item doesn't hand the slot back.
+  Future<int> lifetimeCreated() async {
+    final live = await count();
+    final tallied = await _tally?.value() ?? 0;
+    return max(live, tallied);
+  }
+
+  /// Live [lifetimeCreated], ticking on creates and on row changes.
+  Stream<int> watchLifetimeCreated() {
+    final countExp = _db.items.id.count();
+    final live = (_db.selectOnly(
+      _db.items,
+    )..addColumns([countExp])).watchSingle().map((row) => row.read(countExp)!);
+    final tallied = _tally?.watch() ?? Stream.value(0);
+    return live.combineLatest(tallied, (int a, int b) => max(a, b));
   }
 
   Future<void> updateItem(int id, ItemDraft d) {

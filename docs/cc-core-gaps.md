@@ -4,10 +4,12 @@ Standing rule: cc_core gaps get fixed in cc_core, not worked around here.
 This file is the running ledger of what Pocket Curio needs from core.
 Updated per phase; items move to "Done" when they land in a tagged cc_core.
 
-Baseline: cc_core v0.6.1. Implemented modules: `paywall/` (complete),
-`io/` (cloud backup + legacy Android prefs only), `text/` (fuzzy match,
-number format). Empty barrels: `journal/`, `trends/`, `onboarding/`,
-`theme/`, `scan/`, `notebook_import/`.
+Baseline: cc_core v0.8.0 (pinned from Phase C; 0.6.1 through Phase B).
+Implemented modules: `paywall/` (complete, incl. `LifetimeTally` since
+0.7.0), `io/` (cloud backup, legacy Android prefs, CSV import), `text/`
+(fuzzy match, number format), `scan/` + `notebook_import/` (document
+scan + OCR + batch review, since 0.8.0). Empty barrels: `journal/`,
+`trends/`, `onboarding/`, `theme/`.
 
 ## Empty modules this app needs, by phase
 
@@ -63,4 +65,9 @@ number format). Empty barrels: `journal/`, `trends/`, `onboarding/`,
 
 ## Done
 
-(nothing yet)
+- **Lifetime free-tier tally** — `LifetimeTally` (cc_core 0.7.0). Pocket
+  Curio is its third consumer, with two tallies per install
+  (`collections_created_lifetime`, `items_created_lifetime`). Lesson for
+  the docs: a batch insert must `raiseTo(value + n)` once, not call
+  `recordCreated` per row — the per-call floor at the live count double
+  counts.

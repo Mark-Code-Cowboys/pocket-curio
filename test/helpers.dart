@@ -5,6 +5,7 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:cc_core/cc_core.dart';
 import 'package:path/path.dart' as p;
 
 import 'package:pocket_curio/core/photos/photo_capture.dart';
@@ -15,6 +16,7 @@ import 'package:pocket_curio/data/database/app_database.dart';
 import 'package:pocket_curio/data/providers.dart';
 import 'package:pocket_curio/data/repositories/collection_repository.dart';
 import 'package:pocket_curio/data/repositories/item_repository.dart';
+import 'package:pocket_curio/features/monetization/monetization_providers.dart';
 import 'package:pocket_curio/features/shell/home_shell.dart';
 
 AppDatabase makeTestDb() => AppDatabase(NativeDatabase.memory());
@@ -54,7 +56,8 @@ class FakeCapture implements PhotoCapture {
   }
 }
 
-/// The app wired to an in-memory database and temp photo store; [home]
+/// The app wired to an in-memory database, temp photo store, and a
+/// free-tier fake entitlement service ([entitlements] overrides); [home]
 /// defaults to the shell. A given [home] is pushed above a blank root
 /// route so screens that pop themselves (composers, deletes) land
 /// somewhere instead of emptying the Navigator.
@@ -62,10 +65,15 @@ Widget testApp({
   required AppDatabase db,
   PhotoStore? store,
   PhotoCapture? capture,
+  EntitlementService? entitlements,
   Widget? home,
 }) => ProviderScope(
   overrides: [
     databaseProvider.overrideWithValue(db),
+    kvStoreProvider.overrideWithValue(InMemoryKeyValueStore()),
+    entitlementServiceProvider.overrideWithValue(
+      entitlements ?? FakeEntitlementService(),
+    ),
     photoStoreProvider.overrideWithValue(store ?? makeTestStore()),
     photoCaptureProvider.overrideWithValue(capture ?? FakeCapture()),
   ],

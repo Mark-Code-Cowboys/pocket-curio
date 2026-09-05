@@ -12,7 +12,7 @@ dependencies:
   cc_core:
     git:
       url: https://github.com/Mark-Code-Cowboys/cc_core.git
-      ref: v0.6.1
+      ref: v0.8.0
   drift: ^2.34.3
   drift_flutter: ^0.3.1
   flutter:

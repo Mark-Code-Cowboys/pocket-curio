@@ -1,4 +1,8 @@
+import 'dart:math';
+
+import 'package:cc_core/cc_core.dart';
 import 'package:drift/drift.dart';
+import 'package:stream_transform/stream_transform.dart';
 
 import '../database/app_database.dart';
 
@@ -33,9 +37,13 @@ class CollectionDraft {
 }
 
 class CollectionRepository {
-  CollectionRepository(this._db);
+  CollectionRepository(this._db, {LifetimeTally? tally})
+    : _tally = tally; // ignore: prefer_initializing_formals
 
   final AppDatabase _db;
+
+  /// Collections ever created here; null in plain repo tests.
+  final LifetimeTally? _tally;
 
   /// All collections A-Z.
   Stream<List<Collection>> watchCollections() {
@@ -102,8 +110,26 @@ class CollectionRepository {
     return row.read(countExp)!;
   }
 
-  Future<int> createCollection(CollectionDraft d) {
-    return _db.into(_db.collections).insert(_companion(d));
+  Future<int> createCollection(CollectionDraft d) async {
+    final id = await _db.into(_db.collections).insert(_companion(d));
+    await _tally?.recordCreated(liveCount: await count());
+    return id;
+  }
+
+  /// Collections ever created on this device: the tally, but never below
+  /// the live row count (pre-tally installs, backup restores). Feeds the
+  /// free tier so deleting a shelf doesn't hand the slot back.
+  Future<int> lifetimeCreated() async {
+    final live = await count();
+    final tallied = await _tally?.value() ?? 0;
+    return max(live, tallied);
+  }
+
+  /// Live [lifetimeCreated], ticking on creates and on row changes.
+  Stream<int> watchLifetimeCreated() {
+    final live = watchCollections().map((rows) => rows.length);
+    final tallied = _tally?.watch() ?? Stream.value(0);
+    return live.combineLatest(tallied, (int a, int b) => max(a, b));
   }
 
   Future<void> updateCollection(int id, CollectionDraft d) {
