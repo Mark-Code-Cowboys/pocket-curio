@@ -10,6 +10,7 @@ import 'core/photos/photo_store.dart';
 import 'data/database/app_database.dart';
 import 'data/database/seed.dart';
 import 'data/providers.dart';
+import 'features/monetization/monetization_providers.dart';
 import 'features/scan/scan_providers.dart';
 
 Future<void> main() async {
@@ -17,10 +18,11 @@ Future<void> main() async {
   final db = AppDatabase.open();
   final photos = await PhotoStore.open();
 
-  // Screenshot data: `flutter run --dart-define=DEMO_SEED=true`
-  if (const bool.fromEnvironment('DEMO_SEED')) {
-    await seedDemoData(db, photos);
-  }
+  // Screenshot data: `flutter run --dart-define=DEMO_SEED=true`. The
+  // demo build also runs as Pro so the map fills in and the free-tier
+  // counter is out of the shots; never the uploaded AAB.
+  const demo = bool.fromEnvironment('DEMO_SEED');
+  if (demo) await seedDemoData(db, photos);
 
   runApp(
     ProviderScope(
@@ -32,6 +34,10 @@ Future<void> main() async {
         textRecognitionServiceProvider.overrideWithValue(
           MlKitTextRecognitionService(),
         ),
+        if (demo)
+          entitlementServiceProvider.overrideWithValue(
+            FakeEntitlementService(unlimited: true),
+          ),
       ],
       child: const PocketCurioApp(),
     ),
