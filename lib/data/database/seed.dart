@@ -382,7 +382,7 @@ Future<Uint8List> paintDemoPhoto(String label, Color color) async {
       text: label.toUpperCase(),
       style: TextStyle(
         color: color,
-        fontSize: label.length > 12 ? 44 : 60,
+        fontSize: label.length > 9 ? 44 : 60,
         fontWeight: FontWeight.w800,
         letterSpacing: 2,
       ),
