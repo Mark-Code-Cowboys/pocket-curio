@@ -13,7 +13,7 @@ number format). Empty barrels: `journal/`, `trends/`, `onboarding/`,
 
 | Phase | Needs | cc_core module | Status |
 | --- | --- | --- | --- |
-| A | Item as a journal entry (photo IS the record; rating, notes, opt-in lat/lon) | `journal/` | empty — extraction from Table Encore not done (factory Phase 4) |
+| A | Item as a journal entry (photo IS the record; rating, notes, opt-in lat/lon) | `journal/` | empty — extraction from Table Encore not done (factory Phase 4). **Phase A decision:** `items` is an app-local Drift table carrying photoPath/rating/notes/lat/lng itself, same as Course Ledger; when `journal/` lands, migrate those columns to a core entry row keyed by item id |
 | D | Item photo → place-name transcription → confirm (auto-runs on composer photo) | `scan/` | empty (factory Phase 5) |
 | D | Shelf/fridge batch scan: one photo → detected items split to crops → review grid → bulk insert | `notebook_import/` | empty (factory Phase 5); whole-scene splitting is new — `notebook_import` assumes one item per page |
 | E | World/US fill map by item places + opt-in pins; counters (countries, states, items/yr, oldest) | `trends/` | empty (factory Phase 4) |
