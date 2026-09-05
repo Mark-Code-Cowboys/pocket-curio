@@ -11,6 +11,7 @@ import '../../core/widgets/rating_stars.dart';
 import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
 import '../../data/repositories/item_repository.dart';
+import '../scan/guided_crop_screen.dart';
 import '../scan/place_reader.dart';
 import '../scan/scan_providers.dart';
 
@@ -118,6 +119,50 @@ class _ItemComposerScreenState extends ConsumerState<ItemComposerScreen> {
       return readPlace(lines);
     } on Exception {
       return PlaceReading.empty;
+    }
+  }
+
+  /// Tighten the photo to the souvenir: one box on the guided-crop
+  /// screen, the engine cuts it, and the place is read again off the
+  /// crop (a tight frame reads better). Same ownership rules as a
+  /// retake: a new item's previous file goes now, an edit's original
+  /// only once saved.
+  Future<void> _crop() async {
+    final current = _photoPath;
+    if (current == null || _capturing) return;
+    final store = ref.read(photoStoreProvider);
+    final cropper = ref.read(photoCropperProvider);
+    final sourcePath = store.resolve(current).path;
+    final size = await cropper.imageSize(sourcePath);
+    if (!mounted) return;
+    final boxes = await Navigator.of(context).push<List<Rect>>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => GuidedCropScreen(
+          imagePath: sourcePath,
+          imageSize: size,
+          single: true,
+        ),
+      ),
+    );
+    if (boxes == null || boxes.isEmpty || !mounted) return;
+    setState(() => _capturing = true);
+    try {
+      final cropPath = await cropper.crop(sourcePath, boxes.single);
+      final imported = await store.import(cropPath);
+      if (_isNew) await store.delete(current);
+      final reading = await _readPlace(cropPath);
+      if (!mounted) return;
+      setState(() {
+        _photoPath = imported;
+        if (reading.lines.isNotEmpty) _readLines = reading.lines;
+        if (_place.text.trim().isEmpty && reading.primary != null) {
+          _place.text = reading.primary!;
+          _placeFromPhoto = true;
+        }
+      });
+    } finally {
+      if (mounted) setState(() => _capturing = false);
     }
   }
 
@@ -306,15 +351,22 @@ class _ItemComposerScreenState extends ConsumerState<ItemComposerScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 12,
+          runSpacing: 4,
           children: [
             FilledButton.tonalIcon(
               onPressed: _capturing ? null : () => _capture(PhotoSource.camera),
               icon: const Icon(Icons.photo_camera),
               label: Text(path == null ? 'Take photo' : 'Retake'),
             ),
-            const SizedBox(width: 12),
+            if (path != null)
+              TextButton.icon(
+                onPressed: _capturing ? null : _crop,
+                icon: const Icon(Icons.crop),
+                label: const Text('Crop'),
+              ),
             TextButton.icon(
               onPressed: _capturing
                   ? null

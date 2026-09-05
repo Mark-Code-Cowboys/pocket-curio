@@ -10,9 +10,10 @@ import 'package:pocket_curio/features/scan/photo_cropper.dart';
 /// Hosts the crop screen behind a button so the popped result is
 /// observable.
 class _Host extends StatefulWidget {
-  const _Host({required this.imagePath});
+  const _Host({required this.imagePath, this.single = false});
 
   final String imagePath;
+  final bool single;
 
   @override
   State<_Host> createState() => _HostState();
@@ -33,6 +34,7 @@ class _HostState extends State<_Host> {
                 builder: (_) => GuidedCropScreen(
                   imagePath: widget.imagePath,
                   imageSize: const Size(400, 300),
+                  single: widget.single,
                 ),
               ),
             );
@@ -48,9 +50,11 @@ class _HostState extends State<_Host> {
 void main() {
   final canvas = find.byKey(const Key('guided-crop-canvas'));
 
-  Future<_HostState> open(WidgetTester tester) async {
+  Future<_HostState> open(WidgetTester tester, {bool single = false}) async {
     await tester.pumpWidget(
-      const MaterialApp(home: _Host(imagePath: '/nonexistent/shelf.jpg')),
+      MaterialApp(
+        home: _Host(imagePath: '/nonexistent/shelf.jpg', single: single),
+      ),
     );
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
@@ -164,5 +168,30 @@ void main() {
       addTearDown(() => File(out).deleteSync());
       expect(await cropper.imageSize(out), const Size(20, 10));
     });
+  });
+
+  testWidgets('single mode: one box, redrawing replaces it, Crop returns it', (
+    tester,
+  ) async {
+    final host = await open(tester, single: true);
+
+    expect(find.text('Crop the photo'), findsOneWidget);
+    expect(find.text('No crop yet.'), findsOneWidget);
+    expect(
+      tester
+          .widget<TextButton>(find.widgetWithText(TextButton, 'Crop'))
+          .onPressed,
+      isNull,
+    );
+
+    await drawBox(tester, const Offset(0.1, 0.1), const Offset(0.5, 0.5));
+    await drawBox(tester, const Offset(0.6, 0.2), const Offset(0.9, 0.7));
+    expect(find.text('Crop set.'), findsOneWidget);
+
+    await tester.tap(find.text('Crop'));
+    await tester.pumpAndSettle();
+    final box = host.result!.single;
+    expect(box.left, closeTo(0.6, 0.02), reason: 'the second drag replaced');
+    expect(box.right, closeTo(0.9, 0.02));
   });
 }

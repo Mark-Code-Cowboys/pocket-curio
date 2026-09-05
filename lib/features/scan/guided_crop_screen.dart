@@ -14,9 +14,14 @@ class GuidedCropScreen extends StatefulWidget {
     super.key,
     required this.imagePath,
     required this.imageSize,
+    this.single = false,
   });
 
   final String imagePath;
+
+  /// One box only — cropping a single souvenir's photo. Drawing again
+  /// replaces the box, and the action reads "Crop" instead of "Next".
+  final bool single;
 
   /// Pixel size of the image, for the aspect-correct fit.
   final Size imageSize;
@@ -50,6 +55,7 @@ class _GuidedCropScreenState extends State<GuidedCropScreen> {
       if (rect != null &&
           rect.width >= GuidedCropScreen.minBoxFraction &&
           rect.height >= GuidedCropScreen.minBoxFraction) {
+        if (widget.single) _boxes.clear();
         _boxes.add(rect);
       }
     });
@@ -68,13 +74,19 @@ class _GuidedCropScreenState extends State<GuidedCropScreen> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Box each souvenir'),
+        title: Text(widget.single ? 'Crop the photo' : 'Box each souvenir'),
         actions: [
           TextButton(
             onPressed: _boxes.isEmpty
                 ? null
                 : () => Navigator.of(context).pop(List.of(_boxes)),
-            child: Text(_boxes.isEmpty ? 'Next' : 'Next · ${_boxes.length}'),
+            child: Text(
+              widget.single
+                  ? 'Crop'
+                  : _boxes.isEmpty
+                  ? 'Next'
+                  : 'Next · ${_boxes.length}',
+            ),
           ),
         ],
       ),
@@ -83,8 +95,11 @@ class _GuidedCropScreenState extends State<GuidedCropScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: Text(
-              'Drag a box around each souvenir. Tap a box to remove it. '
-              'Rough is fine — each box becomes its own photo.',
+              widget.single
+                  ? 'Drag a box around the souvenir. Drag again to redo. '
+                        'Rough is fine.'
+                  : 'Drag a box around each souvenir. Tap a box to remove it. '
+                        'Rough is fine — each box becomes its own photo.',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -154,7 +169,9 @@ class _GuidedCropScreenState extends State<GuidedCropScreen> {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
               child: Text(
                 _boxes.isEmpty
-                    ? 'No boxes yet.'
+                    ? (widget.single ? 'No crop yet.' : 'No boxes yet.')
+                    : widget.single
+                    ? 'Crop set.'
                     : '${_boxes.length} ${_boxes.length == 1 ? 'box' : 'boxes'}',
                 style: theme.textTheme.bodySmall,
               ),
