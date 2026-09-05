@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cc_core/cc_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -67,4 +69,21 @@ final itemsForCollectionProvider =
 
 final itemProvider = StreamProvider.family<Item?, int>(
   (ref, id) => ref.watch(itemRepositoryProvider).watchItem(id),
+);
+
+/// Every item on the phone, for the map.
+final allItemsProvider = StreamProvider<List<Item>>(
+  (ref) => ref.watch(itemRepositoryProvider).watchAllItems(),
+);
+
+/// Overridden in main() with SharePlusLauncher, and in tests with
+/// cc_core's FakeShareLauncher.
+final shareLauncherProvider = Provider<ShareLauncher>(
+  (ref) => throw UnimplementedError('shareLauncherProvider must be overridden'),
+);
+
+/// Overridden in main() with path_provider's temp dir, and in tests
+/// with a system temp directory.
+final tempDirProvider = Provider<Future<Directory> Function()>(
+  (ref) => throw UnimplementedError('tempDirProvider must be overridden'),
 );

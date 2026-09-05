@@ -99,9 +99,18 @@ Widget testApp({
   EntitlementService? entitlements,
   TextRecognitionService? recognizer,
   PhotoCropper? cropper,
+  ShareLauncher? share,
   Widget? home,
 }) => ProviderScope(
   overrides: [
+    shareLauncherProvider.overrideWithValue(share ?? FakeShareLauncher()),
+    tempDirProvider.overrideWithValue(() async {
+      final dir = Directory.systemTemp.createTempSync('pocket_curio_tmp_');
+      addTearDown(() {
+        if (dir.existsSync()) dir.deleteSync(recursive: true);
+      });
+      return dir;
+    }),
     textRecognitionServiceProvider.overrideWithValue(
       recognizer ?? FakeTextRecognitionService(),
     ),

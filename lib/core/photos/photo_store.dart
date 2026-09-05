@@ -37,6 +37,14 @@ class PhotoStore {
     return p.join(_folder, name);
   }
 
+  /// Writes [bytes] at [relativePath], creating folders as needed —
+  /// how a backup's photos come back.
+  Future<void> write(String relativePath, List<int> bytes) async {
+    final file = resolve(relativePath);
+    file.parent.createSync(recursive: true);
+    file.writeAsBytesSync(bytes);
+  }
+
   Future<void> delete(String relativePath) async {
     final file = resolve(relativePath);
     if (file.existsSync()) file.deleteSync();

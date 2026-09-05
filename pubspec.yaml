@@ -12,17 +12,21 @@ dependencies:
   cc_core:
     git:
       url: https://github.com/Mark-Code-Cowboys/cc_core.git
-      ref: v0.8.0
+      ref: v0.9.0
   drift: ^2.34.3
   drift_flutter: ^0.3.1
   flutter:
     sdk: flutter
+  # Restore picks a .zip backup (native dialogs, no permissions).
+  file_selector: ^1.0.3
   flutter_riverpod: ^3.4.2
   # Camera + library capture; the composer is camera-first.
   image_picker: ^1.2.3
   path: ^1.9.1
   # App-private photo store under the documents directory.
   path_provider: ^2.1.6
+  # Export and backup go out through the platform share sheet.
+  share_plus: ^13.3.0
   stream_transform: ^2.1.1
 
 dev_dependencies:

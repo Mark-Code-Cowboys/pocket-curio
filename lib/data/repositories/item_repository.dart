@@ -86,6 +86,13 @@ class ItemRepository {
     return query.get();
   }
 
+  /// Every item on the phone, for the map's aggregates.
+  Stream<List<Item>> watchAllItems() {
+    final query = _db.select(_db.items)
+      ..orderBy([(i) => OrderingTerm.asc(i.id)]);
+    return query.watch();
+  }
+
   Stream<Item?> watchItem(int id) {
     final query = _db.select(_db.items)..where((i) => i.id.equals(id));
     return query.watchSingleOrNull();

@@ -15,6 +15,8 @@ void main() {
     expect(find.text('Pocket Curio'), findsOneWidget);
     expect(find.text('A souvenir is a place + a memory.'), findsOneWidget);
     expect(find.text('New collection'), findsOneWidget);
+    expect(find.text('Shelves'), findsOneWidget);
+    expect(find.text('Map'), findsOneWidget);
     await disposeApp(tester);
   });
 }

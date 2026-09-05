@@ -1,8 +1,10 @@
 import 'package:cc_core/cc_core.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'app.dart';
+import 'core/export/share_plus_launcher.dart';
 import 'core/photos/photo_providers.dart';
 import 'core/photos/photo_store.dart';
 import 'data/database/app_database.dart';
@@ -19,6 +21,8 @@ Future<void> main() async {
       overrides: [
         databaseProvider.overrideWithValue(db),
         photoStoreProvider.overrideWithValue(photos),
+        shareLauncherProvider.overrideWithValue(SharePlusLauncher()),
+        tempDirProvider.overrideWithValue(getTemporaryDirectory),
         textRecognitionServiceProvider.overrideWithValue(
           MlKitTextRecognitionService(),
         ),

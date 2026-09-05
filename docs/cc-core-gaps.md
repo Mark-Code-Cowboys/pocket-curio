@@ -4,7 +4,7 @@ Standing rule: cc_core gaps get fixed in cc_core, not worked around here.
 This file is the running ledger of what Pocket Curio needs from core.
 Updated per phase; items move to "Done" when they land in a tagged cc_core.
 
-Baseline: cc_core v0.8.0 (pinned from Phase C; 0.6.1 through Phase B).
+Baseline: cc_core v0.9.0 (pinned from Phase E; 0.8.0 for C–D, 0.6.1 through Phase B).
 Implemented modules: `paywall/` (complete, incl. `LifetimeTally` since
 0.7.0), `io/` (cloud backup, legacy Android prefs, CSV import), `text/`
 (fuzzy match, number format), `scan/` + `notebook_import/` (document
@@ -18,12 +18,20 @@ scan + OCR + batch review, since 0.8.0). Empty barrels: `journal/`,
 | A | Item as a journal entry (photo IS the record; rating, notes, opt-in lat/lon) | `journal/` | empty — extraction from Table Encore not done (factory Phase 4). **Phase A decision:** `items` is an app-local Drift table carrying photoPath/rating/notes/lat/lng itself, same as Course Ledger; when `journal/` lands, migrate those columns to a core entry row keyed by item id |
 | D | Item photo → place-name transcription → confirm (auto-runs on composer photo) | `scan/` | **done on 0.8.0** — `TextRecognitionService` + `OcrLine`; the per-app parser is `readPlace` (tallest line wins, every line offered verbatim) |
 | D | Shelf/fridge batch scan: one photo → crops → review grid → bulk insert | `notebook_import/` | **built app-side** as guided crop (user boxes each souvenir); `notebook_import`'s page-at-a-time `BatchReviewScreen` is list-shaped, the souvenir review needs a photo grid, so this app owns `GuidedCropScreen`, `PhotoCropper`, `ShelfReviewScreen` |
-| E | World/US fill map by item places + opt-in pins; counters (countries, states, items/yr, oldest) | `trends/` | empty (factory Phase 4) |
-| E | Export/backup archive behind entitlement, round-trip test | `io/` | README promises CSV/JSON export + zip backup/restore, but only cloud backup is coded (factory Phase 3 partially shipped) |
+| E | World/US fill map by item places + opt-in pins; counters (countries, states, items/yr, oldest) | `trends/` | **done on 0.9.0** — `RegionTileGrid` + `usStateTiles` for the States, a 7-tile continent strip in-app, `YearlyBars`. Pins deferred: a tile cartogram has nowhere to pin, and lat/lng capture needs a location permission — revisit with a real map if the app ever earns one |
+| E | Export/backup archive behind entitlement, round-trip test | `io/` | **done on 0.9.0** — `buildBackupArchive`/`readBackupArchive`, `buildCsv`, `ShareLauncher`; app owns the format-1 JSON, photo media by base name, and `PhotoStore.write` for restore |
 | F | First-run flow (place+memory framing, fridge-scan fork), consent screen | `onboarding/` | empty (factory Phase 6) |
 | 0 | Base theme from per-app tokens (`CcThemeTokens`) | `theme/` | empty — `lib/core/theme/app_theme.dart` here is the third hand copy of Table Encore's `AppTheme` shape (Course Ledger is the second); third copy = extract |
 
 ## New generic candidates surfaced by this app
+
+- **Geo normalizer** (`text/` or `trends/`): `normalizeState` (US codes +
+  full names), `normalizeCountry` (ISO2 from ~70 names/aliases, US
+  implied by a US state), `continentOf`, `countryName`. Course Ledger's
+  played map only fills states typed as codes; Hitch Post and Loadbook
+  will type the same free text. Table lives in `lib/core/utils/geo.dart`.
+- **Continent strip** (`trends/`): the 7-tile world cartogram beside
+  `usStateTiles` — a `worldContinentTiles` const belongs next to it.
 
 - **PhotoStore + PhotoCapture** (`journal/` or a new `photos/`): Pocket
   Curio is the first CC app with camera capture. `lib/core/photos/` holds
