@@ -4,7 +4,7 @@ Work top to bottom; nothing ships with an unchecked box above it.
 
 ## Code
 
-- [ ] `pubspec.yaml` version bumped (`1.0.0+1` for the first release)
+- [x] `pubspec.yaml` version bumped (`1.0.0+1` for the first release)
 - [ ] cc_core pinned to a **pushed** tag (currently `v0.10.0`; the local
       checkout only has tags through v0.6.1 — push `v0.7.0`…`v0.10.0`
       first). `pubspec_overrides.yaml` is git-ignored and must NOT
