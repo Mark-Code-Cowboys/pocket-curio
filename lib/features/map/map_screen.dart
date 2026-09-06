@@ -24,55 +24,19 @@ class MapScreen extends ConsumerWidget {
     final pro = ref.watch(isProProvider).value ?? false;
     return Scaffold(
       appBar: AppBar(title: const Text('The map')),
-      body: pro ? const _MapContent() : const _ProTeaser(),
-    );
-  }
-}
-
-class _ProTeaser extends ConsumerWidget {
-  const _ProTeaser();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.public, size: 64, color: theme.colorScheme.primary),
-            const SizedBox(height: 16),
-            Text(
-              'Watch the world fill in.',
-              style: theme.textTheme.titleMedium,
-              textAlign: TextAlign.center,
+      body: pro
+          ? const _MapContent()
+          : ProTeaser(
+              icon: Icons.public,
+              headline: 'Watch the world fill in.',
+              body: 'Every state and country your souvenirs came from, '
+                  'lit up one place at a time, plus export and backup — '
+                  'part of Pocket Curio Pro.',
+              ctaLabel: 'See Pocket Curio Pro',
+              onSeePro: () => showPaywallSheet(context),
+              ungatedLabel: 'Restore a backup',
+              onUngated: () => restoreBackupFlow(context, ref),
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Every state and country your souvenirs came from, lit up '
-              'one place at a time, plus export and backup — part of '
-              'Pocket Curio Pro.',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: () => showPaywallSheet(context),
-              child: const Text('See Pocket Curio Pro'),
-            ),
-            const SizedBox(height: 24),
-            const Divider(),
-            TextButton.icon(
-              icon: const Icon(Icons.settings_backup_restore),
-              label: const Text('Restore a backup'),
-              onPressed: () => restoreBackupFlow(context, ref),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
