@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:cc_core/cc_core.dart' hide PhotoSource;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,8 +8,6 @@ import '../../core/photos/photo_capture.dart';
 import '../../core/photos/photo_providers.dart';
 import '../../core/utils/dates.dart';
 import '../../core/widgets/item_photo.dart';
-import '../../core/widgets/rating_stars.dart';
-import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
 import '../../data/repositories/item_repository.dart';
 import '../scan/guided_crop_screen.dart';
@@ -26,7 +25,7 @@ class ItemComposerScreen extends ConsumerStatefulWidget {
   });
 
   final int collectionId;
-  final Item? existing;
+  final ItemWithStory? existing;
 
   @override
   ConsumerState<ItemComposerScreen> createState() => _ItemComposerScreenState();
@@ -35,21 +34,21 @@ class ItemComposerScreen extends ConsumerStatefulWidget {
 class _ItemComposerScreenState extends ConsumerState<ItemComposerScreen> {
   final _formKey = GlobalKey<FormState>();
   final _placeFocus = FocusNode();
-  late final _place = TextEditingController(text: widget.existing?.place);
-  late final _city = TextEditingController(text: widget.existing?.city);
-  late final _state = TextEditingController(text: widget.existing?.state);
-  late final _country = TextEditingController(text: widget.existing?.country);
+  late final _place = TextEditingController(text: widget.existing?.item.place);
+  late final _city = TextEditingController(text: widget.existing?.item.city);
+  late final _state = TextEditingController(text: widget.existing?.item.state);
+  late final _country = TextEditingController(text: widget.existing?.item.country);
   late final _trip = TextEditingController(
-    text: widget.existing?.tripOrOccasion,
+    text: widget.existing?.item.tripOrOccasion,
   );
-  late final _from = TextEditingController(text: widget.existing?.whoGaveIt);
+  late final _from = TextEditingController(text: widget.existing?.item.whoGaveIt);
   late final _notes = TextEditingController(text: widget.existing?.notes);
-  late DateTime? _dateAcquired = widget.existing?.dateAcquired;
+  late DateTime? _dateAcquired = widget.existing?.item.dateAcquired;
   late int? _rating = widget.existing?.rating;
 
   /// Relative path in the photo store. For a new item this file is ours
   /// to delete if the user backs out.
-  late String? _photoPath = widget.existing?.photoPath;
+  late String? _photoPath = widget.existing?.item.photoPath;
   late bool _showMemory = widget.existing != null;
   var _capturing = false;
   var _saved = false;
@@ -202,17 +201,17 @@ class _ItemComposerScreenState extends ConsumerState<ItemComposerScreen> {
       whoGaveIt: _opt(_from),
       rating: _rating,
       notes: _opt(_notes),
-      lat: widget.existing?.lat,
-      lng: widget.existing?.lng,
+      lat: widget.existing?.item.lat,
+      lng: widget.existing?.item.lng,
     );
     final repo = ref.read(itemRepositoryProvider);
     final existing = widget.existing;
     if (existing == null) {
       await repo.createItem(widget.collectionId, draft);
     } else {
-      await repo.updateItem(existing.id, draft);
-      if (existing.photoPath != draft.photoPath) {
-        await ref.read(photoStoreProvider).delete(existing.photoPath);
+      await repo.updateItem(existing.item.id, draft);
+      if (existing.item.photoPath != draft.photoPath) {
+        await ref.read(photoStoreProvider).delete(existing.item.photoPath);
       }
     }
     _saved = true;

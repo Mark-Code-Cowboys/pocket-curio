@@ -18,11 +18,6 @@ class ExportService {
   final ShareLauncher _share;
   final Future<Directory> Function() _tempDir;
 
-  static String _stamp(DateTime d) =>
-      '${d.year.toString().padLeft(4, '0')}-'
-      '${d.month.toString().padLeft(2, '0')}-'
-      '${d.day.toString().padLeft(2, '0')}';
-
   /// Every souvenir as a CSV row, joined with its collection. Returns
   /// the written file (mainly for tests).
   Future<File> shareItemsCsv({DateTime? now}) async {
@@ -34,6 +29,9 @@ class ExportService {
               (t) => OrderingTerm.asc(t.id),
             ]))
             .get();
+    final entries = {
+      for (final e in await _db.select(_db.appJournalEntries).get()) e.id: e,
+    };
 
     final csv = buildCsv([
       [
@@ -61,23 +59,22 @@ class ExportService {
           i.dateAcquired?.toIso8601String().substring(0, 10),
           i.tripOrOccasion,
           i.whoGaveIt,
-          i.rating,
-          i.notes,
+          entries[i.journalEntryId]?.rating,
+          entries[i.journalEntryId]?.notes,
           i.photoPath,
         ],
     ]);
 
-    final stamp = _stamp(now ?? DateTime.now());
-    final file = File(
-      '${(await _tempDir()).path}/pocketcurio-souvenirs-$stamp.csv',
-    );
-    file.writeAsStringSync(csv);
-    await _share.shareFile(
-      file.path,
+    return shareStampedFile(
+      share: _share,
+      tempDir: _tempDir,
+      baseName: 'pocketcurio-souvenirs',
+      extension: 'csv',
       mimeType: 'text/csv',
-      text: 'Pocket Curio souvenirs ($stamp)',
+      shareText: 'Pocket Curio souvenirs',
+      text: csv,
+      now: now,
     );
-    return file;
   }
 
   /// Everything as one zip: export JSON plus every photo file.
@@ -95,16 +92,15 @@ class ExportService {
       ),
       media: await collectPhotoMedia(_db, _store),
     );
-    final stamp = _stamp(now ?? DateTime.now());
-    final file = File(
-      '${(await _tempDir()).path}/pocketcurio-backup-$stamp.zip',
-    );
-    file.writeAsBytesSync(bytes);
-    await _share.shareFile(
-      file.path,
+    return shareStampedFile(
+      share: _share,
+      tempDir: _tempDir,
+      baseName: 'pocketcurio-backup',
+      extension: 'zip',
       mimeType: 'application/zip',
-      text: 'Pocket Curio backup ($stamp)',
+      shareText: 'Pocket Curio backup',
+      bytes: bytes,
+      now: now,
     );
-    return file;
   }
 }

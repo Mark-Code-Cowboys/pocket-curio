@@ -5,7 +5,7 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:cc_core/cc_core.dart';
+import 'package:cc_core/cc_core.dart' hide PhotoSource;
 import 'package:path/path.dart' as p;
 
 import 'package:pocket_curio/core/photos/photo_capture.dart';

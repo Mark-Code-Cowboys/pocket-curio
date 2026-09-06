@@ -1,4 +1,4 @@
-import 'package:cc_core/cc_core.dart';
+import 'package:cc_core/cc_core.dart' hide PhotoSource;
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:pocket_curio/core/backup/backup_service.dart';
@@ -122,7 +122,9 @@ void main() {
     final keyWest = (await ItemRepository(
       target,
     ).watchAllItems().first).singleWhere((i) => i.place == 'Key West');
-    expect(keyWest.rating, 5);
+    final keyWestEntry = (await target.select(target.appJournalEntries).get())
+        .singleWhere((e) => e.id == keyWest.journalEntryId);
+    expect(keyWestEntry.rating, 5);
     expect(keyWest.dateAcquired, DateTime(2019, 3, 2));
     expect(keyWest.lat, closeTo(24.55, 1e-9));
   });
@@ -161,5 +163,78 @@ void main() {
 
     final media = await collectPhotoMedia(db, store);
     expect(media.keys, [real.split('/').last]);
+  });
+
+  test(
+      'a format-1 backup (pre-journal) restores: notes and rating '
+      'become entries', () async {
+    final db = makeTestDb();
+    addTearDown(db.close);
+    final tallies = await restoreFromExportData(db, {
+      'app': 'PocketCurio',
+      'format': 1,
+      'lifetimeCollections': 1,
+      'lifetimeItems': 2,
+      'collections': [
+        {
+          'id': 1,
+          'name': 'Fridge magnets',
+          'kind': 'magnet',
+          'otherLabel': null,
+          'coverPhotoPath': null,
+          'createdAt': '2020-01-01T00:00:00.000',
+        },
+      ],
+      'items': [
+        {
+          'id': 1,
+          'collectionId': 1,
+          'photoPath': 'photos/a.jpg',
+          'place': 'Key West',
+          'city': null,
+          'state': 'FL',
+          'country': 'US',
+          'dateAcquired': null,
+          'tripOrOccasion': null,
+          'whoGaveIt': null,
+          'rating': 5,
+          'notes': 'Sunburn.',
+          'lat': null,
+          'lng': null,
+          'createdAt': '2020-02-01T00:00:00.000',
+        },
+        {
+          'id': 2,
+          'collectionId': 1,
+          'photoPath': 'photos/b.jpg',
+          'place': 'Mackinac Island',
+          'city': null,
+          'state': 'MI',
+          'country': 'US',
+          'dateAcquired': null,
+          'tripOrOccasion': null,
+          'whoGaveIt': null,
+          'rating': null,
+          'notes': null,
+          'lat': null,
+          'lng': null,
+          'createdAt': '2020-03-01T00:00:00.000',
+        },
+      ],
+    });
+    expect(tallies.items, 2);
+
+    final items = await db.select(db.items).get();
+    expect(items, hasLength(2));
+    final keyWest = items.singleWhere((i) => i.place == 'Key West');
+    final entry = (await db.select(db.appJournalEntries).get()).single;
+    expect(keyWest.journalEntryId, entry.id);
+    expect(entry.rating, 5);
+    expect(entry.notes, 'Sunburn.');
+    expect(
+        items
+            .singleWhere((i) => i.place == 'Mackinac Island')
+            .journalEntryId,
+        isNull);
   });
 }

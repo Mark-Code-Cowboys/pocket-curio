@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 
+import 'package:cc_core/cc_core.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/painting.dart';
 
@@ -24,6 +25,7 @@ Future<void> seedDemoData(
   PhotoStore store, {
   DemoPhotoPainter paint = paintDemoPhoto,
 }) async {
+  final journal = db.journal();
   final existing = await db.select(db.collections).get();
   if (existing.isNotEmpty) return;
 
@@ -52,6 +54,11 @@ Future<void> seedDemoData(
     int? rating,
     String? memory,
   }) async {
+    int? entryId;
+    if (rating != null || memory != null) {
+      entryId = await journal
+          .createEntry(JournalEntryDraft(notes: memory, rating: rating));
+    }
     await db
         .into(db.items)
         .insert(
@@ -65,8 +72,7 @@ Future<void> seedDemoData(
             dateAcquired: Value(when),
             tripOrOccasion: Value(trip),
             whoGaveIt: Value(from),
-            rating: Value(rating),
-            notes: Value(memory),
+            journalEntryId: Value(entryId),
           ),
         );
   }

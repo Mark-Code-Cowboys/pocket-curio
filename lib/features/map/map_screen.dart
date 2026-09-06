@@ -1,13 +1,12 @@
-import 'dart:io';
 
 import 'package:cc_core/cc_core.dart';
-import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/backup/backup_service.dart';
 import '../../core/export/export_service.dart';
 import '../../core/photos/photo_providers.dart';
+import '../../core/photos/photo_store.dart';
 import '../../core/utils/dates.dart';
 import '../../core/utils/geo.dart';
 import '../../data/database/app_database.dart';
@@ -112,16 +111,6 @@ class MapFacts {
   Set<String> get usStates => states.where(isUsState).toSet();
 }
 
-const _continentTiles = [
-  RegionTile('NA', 0, 0),
-  RegionTile('SA', 1, 0),
-  RegionTile('EU', 2, 0),
-  RegionTile('AF', 3, 0),
-  RegionTile('AS', 4, 0),
-  RegionTile('OC', 5, 0),
-  RegionTile('AN', 6, 0),
-];
-
 class _MapContent extends ConsumerWidget {
   const _MapContent();
 
@@ -193,14 +182,14 @@ class _MapContent extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 RegionTileGrid(
-                  tiles: _continentTiles,
+                  tiles: continentTiles,
                   filled: facts.continents,
                 ),
                 const SizedBox(height: 6),
                 Text(
                   facts.continents.isEmpty
                       ? 'Add a country to a souvenir to light a continent.'
-                      : _continentTiles
+                      : continentTiles
                             .where((t) => facts.continents.contains(t.code))
                             .map((t) => continentNames[t.code])
                             .join(' · '),
@@ -326,50 +315,28 @@ class _StatChip extends StatelessWidget {
   }
 }
 
-/// Pick a .zip backup, confirm the replace, restore rows and photos,
-/// raise both tallies. Free users can do this — getting your own
-/// collection back is never gated.
+/// The shared cc_core restore flow with Pocket Curio's own words and
+/// restore steps (rows, both tallies, and deleting the files the OLD
+/// rows referenced — photos are big; stale ones don't get to squat).
+/// Free users can do this — getting your own collection back is never
+/// gated.
 Future<void> restoreBackupFlow(BuildContext context, WidgetRef ref) async {
-  const typeGroup = XTypeGroup(label: 'Backup', extensions: ['zip']);
-  final picked = await openFile(acceptedTypeGroups: const [typeGroup]);
-  if (picked == null || !context.mounted) return;
-  final messenger = ScaffoldMessenger.of(context);
-
-  final confirmed = await showDialog<bool>(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      title: const Text('Restore this backup?'),
-      content: const Text(
+  final db = ref.read(databaseProvider);
+  final store = ref.read(photoStoreProvider);
+  await runRestoreFlow(
+    context,
+    confirmBody:
         'Everything on this phone is replaced with the backup — every '
-        'collection, souvenir, and photo. This can’t be undone.',
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(ctx).pop(false),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.of(ctx).pop(true),
-          child: const Text('Restore'),
-        ),
-      ],
-    ),
+        'collection, souvenir, and photo. This can\u2019t be undone.',
+    photoStore: PhotoStoreService(store),
+    restore: (contents) async {
+      final previous = await referencedPhotoPaths(db);
+      final tallies = await restoreFromExportData(db, contents.exportData);
+      for (final path in previous) {
+        await store.delete(path);
+      }
+      await ref.read(collectionTallyProvider).raiseTo(tallies.collections);
+      await ref.read(itemTallyProvider).raiseTo(tallies.items);
+    },
   );
-  if (confirmed != true) return;
-
-  try {
-    final db = ref.read(databaseProvider);
-    final store = ref.read(photoStoreProvider);
-    final contents = readBackupArchive(File(picked.path).readAsBytesSync());
-    final previous = await referencedPhotoPaths(db);
-    final tallies = await restoreFromExportData(db, contents.exportData);
-    await restorePhotoMedia(store, contents.media, previousPaths: previous);
-    await ref.read(collectionTallyProvider).raiseTo(tallies.collections);
-    await ref.read(itemTallyProvider).raiseTo(tallies.items);
-    messenger.showSnackBar(const SnackBar(content: Text('Backup restored.')));
-  } on InvalidBackupException catch (e) {
-    messenger.showSnackBar(SnackBar(content: Text(e.message)));
-  } on Exception catch (e) {
-    messenger.showSnackBar(SnackBar(content: Text('Restore failed: $e')));
-  }
 }

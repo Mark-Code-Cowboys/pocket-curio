@@ -48,11 +48,27 @@ class ItemDraft {
   final double? lng;
 }
 
+/// An item joined with its memory (rating and notes live in the shared
+/// cc_core journal tables; the photo is the item's own — the photo IS
+/// the record).
+class ItemWithStory {
+  const ItemWithStory(this.item, {this.entry});
+
+  final Item item;
+  final JournalEntry? entry;
+
+  int? get rating => entry?.rating;
+  String? get notes => entry?.notes;
+}
+
 class ItemRepository {
-  ItemRepository(this._db, {LifetimeTally? tally})
-    : _tally = tally; // ignore: prefer_initializing_formals
+  ItemRepository(this._db, {AppJournalRepository? journal, LifetimeTally? tally})
+    : _journalOverride = journal, // ignore: prefer_initializing_formals
+      _tally = tally; // ignore: prefer_initializing_formals
 
   final AppDatabase _db;
+  final AppJournalRepository? _journalOverride;
+  late final AppJournalRepository _journal = _journalOverride ?? _db.journal();
 
   /// Items ever created here, across every shelf; null in plain repo
   /// tests.
@@ -98,6 +114,17 @@ class ItemRepository {
     return query.watchSingleOrNull();
   }
 
+  /// One item with its memory, live — the detail screen's feed.
+  Stream<ItemWithStory?> watchItemWithStory(int id) {
+    final entries = _db.select(_db.appJournalEntries).watch();
+    return watchItem(id).combineLatest(entries,
+        (Item? item, List<JournalEntry> entryRows) {
+      if (item == null) return null;
+      final byId = {for (final e in entryRows) e.id: e};
+      return ItemWithStory(item, entry: byId[item.journalEntryId]);
+    });
+  }
+
   /// Items across every collection — feeds `FreeLimit(25, 'items')`.
   /// The cap is per install, not per shelf.
   Future<int> count() async {
@@ -117,7 +144,12 @@ class ItemRepository {
   }
 
   Future<int> createItem(int collectionId, ItemDraft d) async {
-    final id = await _db.into(_db.items).insert(_companion(collectionId, d));
+    final id = await _db.transaction(() async {
+      final entryId = await _entryFor(d);
+      return _db
+          .into(_db.items)
+          .insert(_companion(collectionId, d, entryId));
+    });
     await _tally?.recordCreated(liveCount: await count());
     return id;
   }
@@ -131,7 +163,10 @@ class ItemRepository {
     final ids = await _db.transaction(() async {
       final ids = <int>[];
       for (final d in drafts) {
-        ids.add(await _db.into(_db.items).insert(_companion(collectionId, d)));
+        final entryId = await _entryFor(d);
+        ids.add(await _db
+            .into(_db.items)
+            .insert(_companion(collectionId, d, entryId)));
       }
       return ids;
     });
@@ -164,31 +199,65 @@ class ItemRepository {
   }
 
   Future<void> updateItem(int id, ItemDraft d) {
-    return (_db.update(_db.items)..where((i) => i.id.equals(id))).write(
-      ItemsCompanion(
-        photoPath: Value(d.photoPath),
-        place: Value(d.place),
-        city: Value(d.city),
-        state: Value(d.state),
-        country: Value(d.country),
-        dateAcquired: Value(d.dateAcquired),
-        tripOrOccasion: Value(d.tripOrOccasion),
-        whoGaveIt: Value(d.whoGaveIt),
-        rating: Value(d.rating),
-        notes: Value(d.notes),
-        lat: Value(d.lat),
-        lng: Value(d.lng),
-      ),
-    );
+    return _db.transaction(() async {
+      final item = await (_db.select(_db.items)
+            ..where((i) => i.id.equals(id)))
+          .getSingle();
+      var entryId = item.journalEntryId;
+      if (entryId == null && (d.rating != null || d.notes != null)) {
+        entryId = await _journal
+            .createEntry(JournalEntryDraft(notes: d.notes, rating: d.rating));
+      } else if (entryId != null) {
+        await _journal.updateEntry(entryId, notes: d.notes, rating: d.rating);
+      }
+      await (_db.update(_db.items)..where((i) => i.id.equals(id))).write(
+        ItemsCompanion(
+          photoPath: Value(d.photoPath),
+          place: Value(d.place),
+          city: Value(d.city),
+          state: Value(d.state),
+          country: Value(d.country),
+          dateAcquired: Value(d.dateAcquired),
+          tripOrOccasion: Value(d.tripOrOccasion),
+          whoGaveIt: Value(d.whoGaveIt),
+          lat: Value(d.lat),
+          lng: Value(d.lng),
+          journalEntryId: Value(entryId),
+        ),
+      );
+    });
   }
 
-  /// The photo *file* is cleaned up by the composer layer (Phase B),
-  /// which owns the file store.
-  Future<void> deleteItem(int id) {
-    return (_db.delete(_db.items)..where((i) => i.id.equals(id))).go();
+  /// The photo *file* is cleaned up by the composer layer, which owns
+  /// the file store; the journal entry goes here.
+  Future<void> deleteItem(int id) async {
+    final item = await (_db.select(_db.items)..where((i) => i.id.equals(id)))
+        .getSingleOrNull();
+    await (_db.delete(_db.items)..where((i) => i.id.equals(id))).go();
+    final entryId = item?.journalEntryId;
+    if (entryId != null) await _journal.deleteEntries([entryId]);
   }
 
-  ItemsCompanion _companion(int collectionId, ItemDraft d) =>
+  /// Owner-cleanup for collection deletes: removes the journal entries
+  /// of every item on the shelf (rows cascade with the collection).
+  Future<void> deleteEntriesForCollection(int collectionId) async {
+    final entryId = _db.items.journalEntryId;
+    final query = _db.selectOnly(_db.items)
+      ..addColumns([entryId])
+      ..where(_db.items.collectionId.equals(collectionId) &
+          entryId.isNotNull());
+    final ids = [for (final row in await query.get()) row.read(entryId)!];
+    if (ids.isNotEmpty) await _journal.deleteEntries(ids);
+  }
+
+  /// Creates the memory entry when the draft carries one.
+  Future<int?> _entryFor(ItemDraft d) async {
+    if (d.rating == null && d.notes == null) return null;
+    return _journal
+        .createEntry(JournalEntryDraft(notes: d.notes, rating: d.rating));
+  }
+
+  ItemsCompanion _companion(int collectionId, ItemDraft d, int? entryId) =>
       ItemsCompanion.insert(
         collectionId: collectionId,
         photoPath: d.photoPath,
@@ -199,9 +268,8 @@ class ItemRepository {
         dateAcquired: Value(d.dateAcquired),
         tripOrOccasion: Value(d.tripOrOccasion),
         whoGaveIt: Value(d.whoGaveIt),
-        rating: Value(d.rating),
-        notes: Value(d.notes),
         lat: Value(d.lat),
         lng: Value(d.lng),
+        journalEntryId: Value(entryId),
       );
 }

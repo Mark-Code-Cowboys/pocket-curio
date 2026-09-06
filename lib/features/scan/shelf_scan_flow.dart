@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:cc_core/cc_core.dart';
+import 'package:cc_core/cc_core.dart' hide PhotoSource;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:cc_core/cc_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,9 +8,9 @@ import '../../core/photos/photo_providers.dart';
 import '../../core/utils/dates.dart';
 import '../../core/utils/labels.dart';
 import '../../core/widgets/item_photo.dart';
-import '../../core/widgets/rating_stars.dart';
 import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
+import '../../data/repositories/item_repository.dart';
 import 'item_composer_screen.dart';
 
 /// One souvenir and its memory.
@@ -70,11 +71,12 @@ class ItemDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final item = ref.watch(itemProvider(itemId)).value;
-    if (item == null) {
+    final story = ref.watch(itemWithStoryProvider(itemId)).value;
+    if (story == null) {
       // Deleted out from under us (or still loading the first frame).
       return const Scaffold(body: SizedBox.shrink());
     }
+    final item = story.item;
     final theme = Theme.of(context);
     final size = MediaQuery.sizeOf(context);
     final where = placeLine(
@@ -92,7 +94,7 @@ class ItemDetailScreen extends ConsumerWidget {
               MaterialPageRoute<void>(
                 builder: (_) => ItemComposerScreen(
                   collectionId: item.collectionId,
-                  existing: item,
+                  existing: story,
                 ),
               ),
             ),
@@ -136,9 +138,9 @@ class ItemDetailScreen extends ConsumerWidget {
                     ),
                   ),
                 ],
-                if (item.rating != null) ...[
+                if (story.rating != null) ...[
                   const SizedBox(height: 12),
-                  RatingStars(rating: item.rating),
+                  RatingStars(rating: story.rating),
                 ],
                 const SizedBox(height: 20),
                 _MemoryLine(
@@ -158,11 +160,11 @@ class ItemDetailScreen extends ConsumerWidget {
                   label: 'From',
                   value: item.whoGaveIt,
                 ),
-                if (item.notes != null && item.notes!.isNotEmpty) ...[
+                if (story.notes != null && story.notes!.isNotEmpty) ...[
                   const SizedBox(height: 16),
-                  Text(item.notes!, style: theme.textTheme.bodyLarge),
+                  Text(story.notes!, style: theme.textTheme.bodyLarge),
                 ],
-                if (_hasNoMemory(item)) ...[
+                if (_hasNoMemory(story)) ...[
                   const SizedBox(height: 8),
                   Text(
                     'No memory written yet. Tap edit when it comes back '
@@ -180,12 +182,12 @@ class ItemDetailScreen extends ConsumerWidget {
     );
   }
 
-  bool _hasNoMemory(Item item) =>
-      item.dateAcquired == null &&
-      (item.tripOrOccasion ?? '').isEmpty &&
-      (item.whoGaveIt ?? '').isEmpty &&
-      (item.notes ?? '').isEmpty &&
-      item.rating == null;
+  bool _hasNoMemory(ItemWithStory story) =>
+      story.item.dateAcquired == null &&
+      (story.item.tripOrOccasion ?? '').isEmpty &&
+      (story.item.whoGaveIt ?? '').isEmpty &&
+      (story.notes ?? '').isEmpty &&
+      story.rating == null;
 }
 
 class _MemoryLine extends StatelessWidget {

@@ -71,7 +71,7 @@ void main() {
     expect(items.single.place, 'Mackinac Island');
     expect(items.single.photoPath, startsWith('photos/'));
     expect(store.resolve(items.single.photoPath).existsSync(), isTrue);
-    expect(items.single.notes, isNull);
+    expect(items.single.journalEntryId, isNull);
     await disposeApp(tester);
   });
 
@@ -180,15 +180,15 @@ void main() {
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
 
-    final item = (await tester.runAsync(
-      () => ItemRepository(db).watchItemsForCollection(collectionId).first,
-    ))!.single;
+    final item =
+        (await db.select(db.items).get()).single;
     expect(item.state, 'ON');
     expect(item.country, 'CA');
     expect(item.tripOrOccasion, 'Honeymoon');
     expect(item.whoGaveIt, 'Mom');
-    expect(item.notes, 'Soaked on the boat.');
-    expect(item.rating, 3);
+    final entry = (await db.select(db.appJournalEntries).get()).single;
+    expect(entry.notes, 'Soaked on the boat.');
+    expect(entry.rating, 3);
     expect(item.city, isNull);
 
     // Back on the shelf; the new tile opens the memory.

@@ -45,12 +45,16 @@ void main() {
       // Memories are the point — most items carry one, and every item is
       // dated so the map's by-year bars have something to show.
       expect(
-        items.where((i) => i.notes != null).length,
+        (await db.select(db.appJournalEntries).get())
+            .where((e) => e.notes != null)
+            .length,
         greaterThanOrEqualTo(25),
       );
       expect(items.every((i) => i.dateAcquired != null), isTrue);
       expect(
-        items.where((i) => i.rating != null).length,
+        (await db.select(db.appJournalEntries).get())
+            .where((e) => e.rating != null)
+            .length,
         greaterThanOrEqualTo(10),
       );
 

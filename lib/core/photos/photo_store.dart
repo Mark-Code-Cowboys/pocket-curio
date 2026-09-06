@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cc_core/cc_core.dart' as cc;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -49,4 +50,31 @@ class PhotoStore {
     final file = resolve(relativePath);
     if (file.existsSync()) file.deleteSync();
   }
+}
+
+/// cc_core [cc.PhotoService] face over [PhotoStore], for the shared
+/// restore flow's media loop (and any future journal photo use).
+/// Capture stays app-side (the guided-crop flow); acquire is unused.
+class PhotoStoreService implements cc.PhotoService {
+  PhotoStoreService(this.store);
+
+  final PhotoStore store;
+
+  @override
+  Future<String?> acquire(cc.PhotoSource source) async => null;
+
+  @override
+  Future<String?> acquireTransient(cc.PhotoSource source) async => null;
+
+  @override
+  File fileFor(String photoPath) =>
+      store.resolve(p.join(PhotoStore._folder, photoPath));
+
+  @override
+  Future<void> importBytes(String photoPath, List<int> bytes) =>
+      store.write(p.join(PhotoStore._folder, photoPath), bytes);
+
+  @override
+  Future<void> discard(String photoPath) =>
+      store.delete(p.join(PhotoStore._folder, photoPath));
 }

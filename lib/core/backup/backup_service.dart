@@ -31,7 +31,7 @@ Future<Map<String, Object?>> buildExportData(
 
   return {
     'app': 'PocketCurio',
-    'format': 1,
+    'format': 2,
     'exportedAt': (now ?? DateTime.now()).toIso8601String(),
     'lifetimeCollections': lifetimeCollections,
     'lifetimeItems': lifetimeItems,
@@ -59,13 +59,13 @@ Future<Map<String, Object?>> buildExportData(
           'dateAcquired': i.dateAcquired?.toIso8601String(),
           'tripOrOccasion': i.tripOrOccasion,
           'whoGaveIt': i.whoGaveIt,
-          'rating': i.rating,
-          'notes': i.notes,
+          'journalEntryId': i.journalEntryId,
           'lat': i.lat,
           'lng': i.lng,
           'createdAt': i.createdAt.toIso8601String(),
         },
     ],
+    ...await db.journal().dumpJournalTables(),
   };
 }
 
@@ -108,11 +108,13 @@ Future<RestoredTallies> restoreFromExportData(
   AppDatabase db,
   Map<String, Object?> data,
 ) async {
-  if (data['app'] != 'PocketCurio' || data['format'] != 1) {
+  if (data['app'] != 'PocketCurio' ||
+      (data['format'] != 1 && data['format'] != 2)) {
     throw const InvalidBackupException('Not a Pocket Curio backup');
   }
-  final collections = data['collections'];
-  final items = data['items'];
+  final upgraded = data['format'] == 1 ? _upgradeFormat1(data) : data;
+  final collections = upgraded['collections'];
+  final items = upgraded['items'];
   if (collections is! List || items is! List) {
     throw const InvalidBackupException('Malformed export tables');
   }
@@ -120,6 +122,8 @@ Future<RestoredTallies> restoreFromExportData(
   await db.transaction(() async {
     // Items cascade away with their collections.
     await db.delete(db.collections).go();
+    await db.delete(db.appJournalEntries).go();
+    await db.journal().restoreJournalTables(upgraded);
 
     for (final row in collections.cast<Map<String, dynamic>>()) {
       await db
@@ -153,8 +157,7 @@ Future<RestoredTallies> restoreFromExportData(
               }),
               tripOrOccasion: Value(row['tripOrOccasion'] as String?),
               whoGaveIt: Value(row['whoGaveIt'] as String?),
-              rating: Value(row['rating'] as int?),
-              notes: Value(row['notes'] as String?),
+              journalEntryId: Value(row['journalEntryId'] as int?),
               lat: Value((row['lat'] as num?)?.toDouble()),
               lng: Value((row['lng'] as num?)?.toDouble()),
               createdAt: Value(DateTime.parse(row['createdAt'] as String)),
@@ -164,9 +167,45 @@ Future<RestoredTallies> restoreFromExportData(
   });
   return RestoredTallies(
     collections:
-        (data['lifetimeCollections'] as num?)?.toInt() ?? collections.length,
-    items: (data['lifetimeItems'] as num?)?.toInt() ?? items.length,
+        (upgraded['lifetimeCollections'] as num?)?.toInt() ??
+            collections.length,
+    items: (upgraded['lifetimeItems'] as num?)?.toInt() ?? items.length,
   );
+}
+
+/// Maps a pre-journal (format 1) export into the format-2 shape:
+/// items' notes/rating become journal entries.
+Map<String, Object?> _upgradeFormat1(Map<String, Object?> data) {
+  final items =
+      (data['items'] as List? ?? const []).cast<Map<String, dynamic>>();
+  final entries = <Map<String, Object?>>[];
+  final newItems = <Map<String, Object?>>[];
+  var nextEntry = 1;
+  for (final i in items) {
+    int? entryId;
+    if (i['notes'] != null || i['rating'] != null) {
+      entryId = nextEntry++;
+      entries.add({
+        'id': entryId,
+        'notes': i['notes'],
+        'rating': i['rating'],
+        'createdAt': null,
+      });
+    }
+    newItems.add(
+      {...i, 'journalEntryId': entryId}
+        ..remove('notes')
+        ..remove('rating'),
+    );
+  }
+  return {
+    ...data,
+    'format': 2,
+    'items': newItems,
+    'journalEntries': entries,
+    'journalPhotos': const <Object?>[],
+    'journalTags': const <Object?>[],
+  };
 }
 
 /// Swaps the photo store's contents for the archive's: the files the

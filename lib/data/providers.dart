@@ -71,6 +71,11 @@ final itemProvider = StreamProvider.family<Item?, int>(
   (ref, id) => ref.watch(itemRepositoryProvider).watchItem(id),
 );
 
+/// One item with its memory (journal entry), for detail and edit.
+final itemWithStoryProvider = StreamProvider.family<ItemWithStory?, int>(
+  (ref, id) => ref.watch(itemRepositoryProvider).watchItemWithStory(id),
+);
+
 /// Every item on the phone, for the map.
 final allItemsProvider = StreamProvider<List<Item>>(
   (ref) => ref.watch(itemRepositoryProvider).watchAllItems(),

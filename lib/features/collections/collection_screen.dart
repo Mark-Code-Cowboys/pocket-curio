@@ -80,6 +80,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final items = ref.read(itemRepositoryProvider);
     final store = ref.read(photoStoreProvider);
     final shelf = await items.itemsForCollection(collection.id);
+    // Journal entries don't cascade across the raw FK — collect and
+    // delete them BEFORE the collection cascade takes the item rows.
+    await items.deleteEntriesForCollection(collection.id);
     await ref
         .read(collectionRepositoryProvider)
         .deleteCollection(collection.id);

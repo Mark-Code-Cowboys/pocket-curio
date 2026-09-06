@@ -28,7 +28,8 @@ void main() {
       const ItemDraft(photoPath: 'items/0001.jpg', place: 'Key West'),
     );
 
-    final item = await repo.watchItem(id).first;
+    final story = await repo.watchItemWithStory(id).first;
+    final item = story?.item;
     expect(item?.photoPath, 'items/0001.jpg');
     expect(item?.place, 'Key West');
     expect(item?.city, isNull);
@@ -37,8 +38,8 @@ void main() {
     expect(item?.dateAcquired, isNull);
     expect(item?.tripOrOccasion, isNull);
     expect(item?.whoGaveIt, isNull);
-    expect(item?.rating, isNull);
-    expect(item?.notes, isNull);
+    expect(story?.rating, isNull);
+    expect(story?.notes, isNull);
     expect(item?.lat, isNull);
     expect(item?.lng, isNull);
     expect(item?.createdAt, isNotNull);
@@ -62,13 +63,14 @@ void main() {
       ),
     );
 
-    final item = await repo.watchItem(id).first;
+    final story = await repo.watchItemWithStory(id).first;
+    final item = story?.item;
     expect(item?.country, 'CA');
     expect(item?.dateAcquired, DateTime(2019, 7, 4));
     expect(item?.tripOrOccasion, 'Honeymoon');
     expect(item?.whoGaveIt, 'Bought it myself');
-    expect(item?.rating, 5);
-    expect(item?.notes, 'Soaked on the Maid of the Mist.');
+    expect(story?.rating, 5);
+    expect(story?.notes, 'Soaked on the Maid of the Mist.');
     expect(item?.lat, closeTo(43.0896, 1e-9));
     expect(item?.lng, closeTo(-79.0849, 1e-9));
   });
@@ -186,10 +188,10 @@ void main() {
       itemDraft(place: 'Boston Harbor', rating: null, notes: null),
     );
 
-    final item = await repo.watchItem(id).first;
-    expect(item?.place, 'Boston Harbor');
-    expect(item?.rating, isNull);
-    expect(item?.notes, isNull);
+    final story = await repo.watchItemWithStory(id).first;
+    expect(story?.item.place, 'Boston Harbor');
+    expect(story?.rating, isNull);
+    expect(story?.notes, isNull);
   });
 
   test('deleteItem removes the row and the stream reports null', () async {

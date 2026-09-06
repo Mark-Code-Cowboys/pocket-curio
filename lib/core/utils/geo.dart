@@ -40,17 +40,6 @@ String countryName(String code) => _countries[code]?.$1 ?? code;
 /// null for countries we don't know.
 String? continentOf(String code) => _countries[code]?.$2;
 
-/// Long labels for the continent strip.
-const continentNames = {
-  'NA': 'North America',
-  'SA': 'South America',
-  'EU': 'Europe',
-  'AF': 'Africa',
-  'AS': 'Asia',
-  'OC': 'Oceania',
-  'AN': 'Antarctica',
-};
-
 const _usStateNames = {
   'AL': 'ALABAMA',
   'AK': 'ALASKA',
