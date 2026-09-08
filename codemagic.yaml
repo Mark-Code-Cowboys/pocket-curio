@@ -1,0 +1,82 @@
+# Pocket Curio iOS pipeline (no local Mac — everything builds on Codemagic).
+# Mirrors TableEncore/codemagic.yaml.
+#
+#   ios-smoke   — no credentials; proves the iOS build compiles.
+#   ios-release — signed IPA → TestFlight. Requires:
+#                 1. The App Store Connect API key integration in Codemagic
+#                    (Teams > Integrations > Developer Portal), named below.
+#                 2. Bundle id com.codecowboys.pocketcurio registered in the
+#                    Apple Developer portal + an App Store Connect app record
+#                    (name "Pocket Curio: Souvenir Journal", SKU pocketcurio).
+#                 3. In-app purchases created in App Store Connect —
+#                    pocketcurio_pro_lifetime (non-consumable) and
+#                    pocketcurio_pro_monthly (auto-renewable, own group) —
+#                    so TestFlight testers exercise the real paywall.
+#                 Codemagic fetches/creates signing certs and profiles itself.
+#
+# Builds are started manually from the Codemagic UI — no branch triggers.
+
+definitions:
+  environment: &flutter_env
+    flutter: 3.44.9 # keep in step with the local SDK (~/sdks/flutter)
+    xcode: latest
+    cocoapods: default
+
+workflows:
+  ios-smoke:
+    name: iOS smoke (unsigned)
+    instance_type: mac_mini_m2
+    max_build_duration: 45
+    environment:
+      <<: *flutter_env
+    scripts:
+      - name: Get packages
+        script: flutter pub get
+      - name: Run tests
+        script: flutter test
+      - name: Build iOS without codesigning
+        script: flutter build ios --release --no-codesign
+    artifacts:
+      - build/ios/iphoneos/*.app
+
+  ios-release:
+    name: iOS release → TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      # Name of the ASC API key in Codemagic's Developer Portal integration.
+      app_store_connect: Codemagic
+    environment:
+      <<: *flutter_env
+      groups:
+        - signing # CERTIFICATE_PRIVATE_KEY (secret): RSA 2048 private key backing the Code Cowboys LLC distribution certificate
+    scripts:
+      - name: Fetch or create signing files
+        script: |
+          app-store-connect fetch-signing-files "com.codecowboys.pocketcurio" \
+            --type IOS_APP_STORE \
+            --create
+      - name: Set up keychain
+        script: |
+          keychain initialize
+          keychain add-certificates
+      - name: Apply signing profiles
+        script: xcode-project use-profiles
+      - name: Get packages
+        script: flutter pub get
+      - name: Run tests
+        script: flutter test
+      - name: Build signed IPA
+        script: |
+          flutter build ipa --release \
+            --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        # App Store submission is a manual step in App Store Connect once
+        # TestFlight has been exercised (listing copy and screenshots live
+        # in docs/play-store-listing.md and docs/store-assets/app-store).
