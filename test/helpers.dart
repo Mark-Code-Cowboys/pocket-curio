@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:cc_core/cc_core.dart' hide PhotoSource;
 import 'package:path/path.dart' as p;
 
+import 'package:pocket_curio/core/links.dart';
 import 'package:pocket_curio/core/photos/photo_capture.dart';
 import 'package:pocket_curio/core/photos/photo_providers.dart';
 import 'package:pocket_curio/core/photos/photo_store.dart';
@@ -101,8 +102,10 @@ Widget testApp({
   PhotoCropper? cropper,
   ShareLauncher? share,
   Widget? home,
+  LinkOpener? linkOpener,
 }) => ProviderScope(
   overrides: [
+    if (linkOpener != null) linkOpenerProvider.overrideWithValue(linkOpener),
     shareLauncherProvider.overrideWithValue(share ?? FakeShareLauncher()),
     tempDirProvider.overrideWithValue(() async {
       final dir = Directory.systemTemp.createTempSync('pocket_curio_tmp_');

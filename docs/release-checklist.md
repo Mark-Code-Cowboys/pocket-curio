@@ -53,10 +53,15 @@ Work top to bottom; nothing ships with an unchecked box above it.
 
 ## Store
 
-- [ ] Privacy policy live at code-cowboys.com/privacy/pocketcurio
-      (source: `docs/privacy-policy.md`)
+- [ ] Privacy policy live at pocketcurio.app/privacy/ (source:
+      `docs/privacy-policy.md`; code-cowboys.com/privacy/pocketcurio
+      already redirects there)
+- [x] pocketcurio.app serves /, /help/, /faq/, /user-guide/, /privacy/ —
+      the Help & about screen links to them (`lib/core/links.dart`); all
+      five answered 200 on 2026-09-08
 - [ ] Listing fields pasted from `docs/play-store-listing.md`
-- [x] Screenshots captured per the listing doc (DEMO_SEED, Pixel 7
+- [x] Screenshots captured per the listing doc (shot 01 is the real
+      Fridge Magnets shelf off the Pixel; 02–07 DEMO_SEED on the Pixel 7
       emulator, 2026-09-08) → `docs/store-assets/raw/`; captioned and
       sized store sets built by `python3 tool/make_store_assets.py`
 - [ ] Re-shoot `03-shelf-scan` (and `07-shelf-review`) with a **real**
@@ -72,11 +77,15 @@ Work top to bottom; nothing ships with an unchecked box above it.
 
 ## Build & upload
 
-- [ ] `android/key.properties` + keystore in place (never committed;
-      template in `android/key.properties.example`). Without it the
-      release build signs with the **debug** key and prints a WARNING —
-      Play rejects that bundle, so the warning is the tell
-- [ ] `flutter build appbundle --release` — no WARNING line in the output
+- [x] `android/key.properties` + keystore in place (never committed;
+      template in `android/key.properties.example`). Upload key generated
+      2026-09-08: `~/keystores/pocketcurio-upload.jks`, alias `upload`,
+      CN=Code Cowboys LLC, valid to 2054 — **back up the .jks and the
+      password outside this machine**. Without them the release build
+      signs with the **debug** key and prints a WARNING — Play rejects
+      that bundle, so the warning is the tell
+- [x] `flutter build appbundle --release` — signed with the upload key
+      (2026-09-08, signer SHA-256 verified against the keystore)
 - [ ] Internal testing release; license testers verify purchases and
       the batch-scan gate
 - [ ] Promote to closed → production when the boxes above are checked

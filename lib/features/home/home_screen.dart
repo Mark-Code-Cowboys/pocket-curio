@@ -5,6 +5,7 @@ import '../../core/utils/labels.dart';
 import '../../core/widgets/item_photo.dart';
 import '../../data/providers.dart';
 import '../../data/repositories/collection_repository.dart';
+import '../about/about_screen.dart';
 import '../collections/collection_screen.dart';
 import '../monetization/free_tier_counter.dart';
 
@@ -17,7 +18,18 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final summaries = ref.watch(collectionSummariesProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Pocket Curio')),
+      appBar: AppBar(
+        title: const Text('Pocket Curio'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            tooltip: 'Help & about',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const AboutScreen()),
+            ),
+          ),
+        ],
+      ),
       body: summaries.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('$e')),

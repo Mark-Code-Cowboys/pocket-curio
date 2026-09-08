@@ -74,8 +74,19 @@ Lifestyle (secondary consideration: Travel & Local)
 
 ## Privacy policy URL
 
-https://code-cowboys.com/privacy/pocketcurio
-(Source text: `docs/privacy-policy.md` — publish before submission.)
+https://pocketcurio.app/privacy/
+(Source text: `docs/privacy-policy.md` — publish before submission. The
+Code Cowboys site already redirects code-cowboys.com/privacy/pocketcurio
+here.)
+
+## Site pages the app links to (Help & about screen)
+
+`lib/core/links.dart` — live (checked 2026-09-08), same layout as
+tableencore.app:
+
+- https://pocketcurio.app/ · https://pocketcurio.app/help/ ·
+  https://pocketcurio.app/faq/ · https://pocketcurio.app/user-guide/ ·
+  https://pocketcurio.app/privacy/
 
 ---
 
@@ -86,8 +97,11 @@ plants two collections / 30 souvenirs / 12 states / 4 countries, every
 one with a memory written for these shots. Order tells the product
 story, per the build brief:
 
-1. **The collection grid** — Mom's fridge, sorted by Date: 18 tiles of
-   place-labelled photos. Caption: "The shelf you can carry."
+1. **The collection grid** — a *real* shelf: the Fridge Magnets
+   collection off the Pixel (24 magnets, dark theme, status bar
+   normalised to 9:00 in post; original in `raw/archive/`). The only
+   shot with live photos, so it leads. Caption: "The shelf you can
+   carry." (The DEMO_SEED "Mom's fridge" grid is archived alongside.)
 2. **The map fill** — Map tab (Pro): continents lit, 12 states filled,
    "United States · 24" chip row. Caption: "Watch the world fill in."
 3. **The fridge batch scan** — Guided crop screen with 5–6 boxes drawn
@@ -107,8 +121,8 @@ story, per the build brief:
    crops with their place names filled in. Caption: "Reads what's
    printed. You check the spelling."
 
-Captured 2026-09-08 on the Pixel 7 emulator (same 1080×2400 panel as
-the phone) with the demo status bar (9:00, full battery, Wi-Fi). Shot 3
+Shots 2–7 captured 2026-09-08 on the Pixel 7 emulator (same 1080×2400
+panel as the phone) with the demo status bar (9:00, full battery, Wi-Fi). Shot 3
 and 7 used a rendered fridge photo (`KEY WEST`, `MAINE`, … magnets on
 brushed steel) because the emulator has no real camera — re-shoot on
 the Pixel when there's a fridge handy; ML Kit read every magnet.
@@ -158,6 +172,9 @@ those already.)
 
 **Description:** the Play full description above, minus the Markdown
 bold markers. **Category:** Lifestyle; secondary Travel.
+
+**Support URL:** https://pocketcurio.app/help/ · **Marketing URL:**
+https://pocketcurio.app/ · **Privacy URL:** https://pocketcurio.app/privacy/
 
 **Privacy nutrition label:** Data Not Collected. **Age rating:** 4+.
 **Review notes:** "All data is on-device. Pocket Curio Pro is a

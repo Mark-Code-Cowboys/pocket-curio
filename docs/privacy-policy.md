@@ -2,7 +2,7 @@
 
 **Effective date:** (set at publication)
 **Publisher:** Code Cowboys LLC
-**Published at:** https://code-cowboys.com/privacy/pocketcurio
+**Published at:** https://pocketcurio.app/privacy/ (code-cowboys.com/privacy/pocketcurio redirects here)
 
 Pocket Curio is a personal journal of souvenirs and the places they
 came from. Our privacy policy is short because the app is built so that

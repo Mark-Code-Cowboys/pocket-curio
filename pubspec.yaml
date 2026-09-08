@@ -28,6 +28,8 @@ dependencies:
   # Export and backup go out through the platform share sheet.
   share_plus: ^13.3.0
   stream_transform: ^2.1.1
+  # Help, FAQ, user guide, privacy — pocketcurio.app in the browser.
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   build_runner: ^2.15.1

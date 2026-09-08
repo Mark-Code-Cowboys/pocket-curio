@@ -4,7 +4,7 @@ A Code Cowboys souvenir collection journal. Not an inventory app. No
 barcodes, no value estimates, no marketplace. A souvenir is a place + a
 memory — photograph it, name the place, and watch the map fill in.
 
-- Package id: `com.codecowboys.pocketcurio` · Domain: mypocketcurio.app
+- Package id: `com.codecowboys.pocketcurio` · Site: pocketcurio.app (help, FAQ, user guide, privacy — the app links there)
 - Privacy-first, local-only (Drift/sqlite), no accounts, no analytics.
 - Built on [`cc_core`](https://github.com/Mark-Code-Cowboys/cc_core)
   pinned by tag; local iteration via git-ignored `pubspec_overrides.yaml`
@@ -33,6 +33,7 @@ memory — photograph it, name the place, and watch the map fill in.
 - [`docs/play-monetization-setup.md`](docs/play-monetization-setup.md) —
   products `pocketcurio_pro_lifetime` / `pocketcurio_pro_monthly`.
 - [`docs/privacy-policy.md`](docs/privacy-policy.md) — source for
-  code-cowboys.com/privacy/pocketcurio.
+  pocketcurio.app/privacy (code-cowboys.com/privacy/pocketcurio redirects
+  there).
 - [`docs/cc-core-gaps.md`](docs/cc-core-gaps.md) — what this app needed
   from core, what landed, and what to extract next.
