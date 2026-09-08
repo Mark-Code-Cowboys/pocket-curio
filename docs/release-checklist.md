@@ -59,7 +59,10 @@ Work top to bottom; nothing ships with an unchecked box above it.
 - [x] pocketcurio.app serves /, /help/, /faq/, /user-guide/, /privacy/ —
       the Help & about screen links to them (`lib/core/links.dart`); all
       five answered 200 on 2026-09-08
-- [ ] Listing fields pasted from `docs/play-store-listing.md`
+- [x] Listing fields pasted from `docs/play-store-listing.md` (Play Console,
+      2026-09-08: name, short + full description, icon, feature graphic,
+      7 phone + 4 tablet shots in both tablet slots; category Lifestyle;
+      contact hello@code-cowboys.com / pocketcurio.app)
 - [x] Screenshots captured per the listing doc (shot 01 is the real
       Fridge Magnets shelf off the Pixel; 02–07 DEMO_SEED on the Pixel 7
       emulator, 2026-09-08) → `docs/store-assets/raw/`; captioned and
@@ -73,7 +76,11 @@ Work top to bottom; nothing ships with an unchecked box above it.
       in `docs/store-assets/app-store/`; copy from the App Store section
       of the listing doc
 - [ ] Products created per `docs/play-monetization-setup.md`, Active
-- [ ] Data safety form matches the privacy policy
+- [x] Data safety form matches the privacy policy (no data collected /
+      shared; saved 2026-09-08). Also done: content rating (IARC, all
+      ages), target audience 18+, ads none, ad ID no, sign-in details
+      (IAP-only restriction + reviewer instructions), government /
+      financial / health none
 
 ## Build & upload
 
