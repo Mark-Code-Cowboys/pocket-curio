@@ -100,9 +100,11 @@ packages:
   cc_core:
     dependency: "direct main"
     description:
-      path: "../CC_Core"
-      relative: true
-    source: path
+      path: "."
+      ref: "v0.21.2"
+      resolved-ref: bee5a03631a30dfae5386ec08a3bbe946a50de1c
+      url: "https://github.com/Mark-Code-Cowboys/cc_core.git"
+    source: git
     version: "0.21.2"
   characters:
     dependency: transitive

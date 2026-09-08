@@ -18,6 +18,12 @@ memory — photograph it, name the place, and watch the map fill in.
   30 souvenirs with placeholder photos for screenshots (no-op on a
   non-empty phone).
 - Icons: `python3 tool/make_icon.py && dart run flutter_launcher_icons`.
+- Store graphics (icons, feature graphic, captioned screenshots in every
+  Play / App Store size): `python3 tool/make_store_assets.py` from the
+  raw shots in `docs/store-assets/raw/`.
+- Release signing: copy `android/key.properties.example` to
+  `android/key.properties` (git-ignored). Without it a release build
+  signs with the debug key and says so.
 
 ## Docs
 

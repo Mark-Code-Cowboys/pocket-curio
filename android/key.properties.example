@@ -1,0 +1,9 @@
+# Copy to android/key.properties (git-ignored) and fill in. The keystore
+# itself lives outside the repo; *.jks / *.keystore are ignored too.
+#
+#   keytool -genkey -v -keystore ~/keys/pocketcurio-upload.jks \
+#     -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+storeFile=/home/you/keys/pocketcurio-upload.jks
+storePassword=CHANGE_ME
+keyAlias=upload
+keyPassword=CHANGE_ME

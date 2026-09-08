@@ -103,7 +103,63 @@ story, per the build brief:
    magnets, Dad's keychains · 12 keychains) over "30 items · 2
    collections". Caption: "One phone. Everyone's shelf."
 
-Feature graphic (1024×500) and 512px store icon: derive from
-`assets/icon/` art (regenerate with `python3 tool/make_icon.py`) —
-curio violet, the luggage-tag mark left, wordmark right. TODO alongside
-first upload.
+7. **The review grid** (optional 7th) — "Check what was read": the six
+   crops with their place names filled in. Caption: "Reads what's
+   printed. You check the spelling."
+
+Captured 2026-09-08 on the Pixel 7 emulator (same 1080×2400 panel as
+the phone) with the demo status bar (9:00, full battery, Wi-Fi). Shot 3
+and 7 used a rendered fridge photo (`KEY WEST`, `MAINE`, … magnets on
+brushed steel) because the emulator has no real camera — re-shoot on
+the Pixel when there's a fridge handy; ML Kit read every magnet.
+
+## Store assets (`docs/store-assets/`)
+
+Built by `python3 tool/make_store_assets.py` from `assets/icon/` and
+the raw screenshots in `docs/store-assets/raw/`:
+
+| File | Size | Use |
+| --- | --- | --- |
+| `store-icon-512.png` | 512×512, 32-bit | Play hi-res icon |
+| `feature-graphic.png` | 1024×500 | Play feature graphic |
+| `app-store-icon-1024.png` | 1024×1024, no alpha | App Store icon |
+| `play/phone/*.png` | 1080×2400 | Play phone screenshots (captioned) |
+| `play/tablet-10/*.png` | 2064×2752 | Play 10" tablet screenshots (raw) |
+| `app-store/iphone-6.9/*.png` | 1320×2868 | App Store 6.9" (captioned) |
+| `app-store/iphone-6.5/*.png` | 1284×2778 | App Store 6.5" (captioned) |
+| `app-store/ipad-13/*.png` | 2064×2752 | App Store 13" iPad (raw) |
+
+Captions live in `CAPTIONS` in the tool — keep them in step with the
+screenshot plan above. Upload order is the file order (01–07).
+
+---
+
+## App Store (Codemagic iOS lane)
+
+**Name (30):** Pocket Curio: Souvenir Journal (29)
+
+**Subtitle (30):** A souvenir is a place + a memory (30 — drop the
+period to fit; or "Photograph the shelf. Map it." (29))
+
+**Promotional text (170):**
+
+> Photograph each keychain and magnet, name the place, keep the memory,
+> and watch the map fill in. Private by construction: no account, no
+> cloud, no analytics.
+
+(162 chars.)
+
+**Keywords (100, comma-separated, no spaces after commas):**
+
+> souvenir,keychain,fridge magnet,collection,travel,keepsake,journal,map,places visited,shot glass
+
+(96 chars. Don't repeat words from the name/subtitle — Apple indexes
+those already.)
+
+**Description:** the Play full description above, minus the Markdown
+bold markers. **Category:** Lifestyle; secondary Travel.
+
+**Privacy nutrition label:** Data Not Collected. **Age rating:** 4+.
+**Review notes:** "All data is on-device. Pocket Curio Pro is a
+non-consumable + a monthly auto-renewable subscription; no login to
+test — the free tier is one collection and 25 souvenirs."
