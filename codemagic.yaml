@@ -14,7 +14,9 @@
 #                    so TestFlight testers exercise the real paywall.
 #                 Codemagic fetches/creates signing certs and profiles itself.
 #
-# Builds are started manually from the Codemagic UI — no branch triggers.
+# ios-release also runs on every pushed tag matching v* (like Trace
+# Elements): bump pubspec.yaml, commit, `git tag v1.0.0`, `git push --tags`.
+# ios-smoke is manual only.
 
 definitions:
   environment: &flutter_env
@@ -46,6 +48,13 @@ workflows:
     integrations:
       # Name of the ASC API key in Codemagic's Developer Portal integration.
       app_store_connect: Codemagic
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: 'v*'
+          include: true
+      cancel_previous_builds: true
     environment:
       <<: *flutter_env
       groups:
