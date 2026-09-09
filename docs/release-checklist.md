@@ -46,10 +46,14 @@ Work top to bottom; nothing ships with an unchecked box above it.
       review grid, paywall, map (home, shelf, detail, composer, scan
       sheet, map checked on the Pixel 7 emulator 2026-09-08; crop, review,
       paywall still to eyeball on the phone)
-- [ ] iOS lane (Codemagic, later): deployment target is already 15.5
-      in the Xcode project and `ios/Podfile` (`google_mlkit_text_recognition`
-      requires it); run `pod install` there, then confirm the camera and
-      photo-library prompts show the plist copy
+- [x] iOS lane (Codemagic): `ios-release` builds, signs, and uploads to
+      TestFlight; triggers on `v*` tags (first: `v1.0.0+2`, build 2,
+      2026-09-08). Every upload needs a `+N` bump in pubspec.yaml — App
+      Store Connect rejects a repeated build number. Exempt-encryption
+      key is in Info.plist so the compliance prompt is gone
+- [ ] On the iPhone (TestFlight build 2): camera and photo-library
+      prompts show the plist copy; paywall shows prices once the IAPs
+      exist in App Store Connect; sandbox purchase + restore
 
 ## Store
 
