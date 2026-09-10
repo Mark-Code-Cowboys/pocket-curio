@@ -76,10 +76,20 @@ Work top to bottom; nothing ships with an unchecked box above it.
       stand-in (`tool/make_store_assets.py` docstring). Optional, but
       it's the honest shot
 - [x] Feature graphic + 512 store icon exported (`docs/store-assets/`)
-- [ ] App Store Connect: 6.9" + 6.5" iPhone sets and the 13" iPad set are
-      in `docs/store-assets/app-store/`; copy from the App Store section
-      of the listing doc
-- [ ] Products created per `docs/play-monetization-setup.md`, Active
+- [x] App Store Connect: 6.5" iPhone set (7) + 13" iPad set (4) uploaded
+      one file at a time so the order holds (a multi-file drop lands in
+      upload-completion order); all listing copy, review contact, privacy
+      (Data Not Collected), age rating 4+, free price, 175 countries
+      (2026-09-10)
+- [ ] Play products created per `docs/play-monetization-setup.md`, Active
+      (still open on 2026-09-10 — the two products are the last Play step)
+- [x] App Store IAPs: `pocketcurio_pro_lifetime` $6.99 non-consumable and
+      `pocketcurio_pro_monthly` $1.49 in group "Pocket Curio Pro"; each
+      needs a review screenshot at an iPhone size — 1284×2778 of the
+      paywall (`docs/store-assets/app-store/iap-review-paywall.png`, from
+      a non-DEMO_SEED build on the Pixel 7 AVD; the demo build runs as
+      Pro and never shows the paywall). Submitted with the version
+      (2026-09-10)
 - [x] Data safety form matches the privacy policy (no data collected /
       shared; saved 2026-09-08). Also done: content rating (IARC, all
       ages), target audience 18+, ads none, ad ID no, sign-in details
@@ -97,9 +107,15 @@ Work top to bottom; nothing ships with an unchecked box above it.
       that bundle, so the warning is the tell
 - [x] `flutter build appbundle --release` — signed with the upload key
       (2026-09-08, signer SHA-256 verified against the keystore)
-- [ ] Internal testing release; license testers verify purchases and
-      the batch-scan gate
-- [ ] Promote to closed → production when the boxes above are checked
+- [x] Internal testing release (version code 1, 2026-09-08)
+- [x] Production: version code 1 promoted from internal testing and sent
+      for review with 176 countries + rest of world (2026-09-10). Version
+      code 2 (the `+2` bump) exists only locally — the 76 MB AAB can't go
+      through the browser tool, so the vc1 bundle (built after the last
+      Android code change, c1026e4) ships
+- [x] App Store: version 1.0 (build 2) + both IAPs + the subscription
+      group submitted for review (2026-09-10). Contact phone/email match
+      Table Encore's review record
 
 ## Post-launch
 
