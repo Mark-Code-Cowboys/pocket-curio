@@ -81,8 +81,9 @@ Work top to bottom; nothing ships with an unchecked box above it.
       upload-completion order); all listing copy, review contact, privacy
       (Data Not Collected), age rating 4+, free price, 175 countries
       (2026-09-10)
-- [ ] Play products created per `docs/play-monetization-setup.md`, Active
-      (still open on 2026-09-10 — the two products are the last Play step)
+- [x] Play products created per `docs/play-monetization-setup.md`, both
+      Active (2026-09-10): `pocketcurio_pro_lifetime` $6.99 / option `buy`,
+      `pocketcurio_pro_monthly` base plan `monthly` $1.49 auto-renewing
 - [x] App Store IAPs: `pocketcurio_pro_lifetime` $6.99 non-consumable and
       `pocketcurio_pro_monthly` $1.49 in group "Pocket Curio Pro"; each
       needs a review screenshot at an iPhone size — 1284×2778 of the
