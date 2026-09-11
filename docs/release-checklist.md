@@ -119,11 +119,12 @@ Work top to bottom; nothing ships with an unchecked box above it.
 - [x] App Store: version 1.0 (build 2) + both IAPs + the subscription
       group submitted for review (2026-09-10). Contact phone/email match
       Table Encore's review record
-- [ ] App Store: 1.0 (2) rejected 2026-09-10 under 3.1.2 — no Terms of
+- [x] App Store: 1.0 (2) rejected 2026-09-10 under 3.1.2 — no Terms of
       Use (EULA) link in the description. Fix: EULA + privacy lines
       appended to the description, and the paywall gained Terms of Use /
-      Privacy Policy links (same fix as Table Encore 1.3.1). Resubmit
-      with build 3 (`v1.0.0+3` tag → Codemagic)
+      Privacy Policy links (same fix as Table Encore 1.3.1). Resubmitted
+      2026-09-10 8:52 PM with build 3 (`v1.0.0+3` → Codemagic → TestFlight
+      in ~10 min); version + both IAPs + group all Waiting for Review
 
 ## Post-launch
 
