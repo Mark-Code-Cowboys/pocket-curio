@@ -110,13 +110,20 @@ Work top to bottom; nothing ships with an unchecked box above it.
       (2026-09-08, signer SHA-256 verified against the keystore)
 - [x] Internal testing release (version code 1, 2026-09-08)
 - [x] Production: version code 1 promoted from internal testing and sent
-      for review with 176 countries + rest of world (2026-09-10). Version
+      for review with 176 countries + rest of world (2026-09-10). Approved
+      and **Available on Google Play** as of 2026-09-10 10:40 AM (177
+      countries/regions, Play Console Production > Releases). Version
       code 2 (the `+2` bump) exists only locally — the 76 MB AAB can't go
       through the browser tool, so the vc1 bundle (built after the last
       Android code change, c1026e4) ships
 - [x] App Store: version 1.0 (build 2) + both IAPs + the subscription
       group submitted for review (2026-09-10). Contact phone/email match
       Table Encore's review record
+- [ ] App Store: 1.0 (2) rejected 2026-09-10 under 3.1.2 — no Terms of
+      Use (EULA) link in the description. Fix: EULA + privacy lines
+      appended to the description, and the paywall gained Terms of Use /
+      Privacy Policy links (same fix as Table Encore 1.3.1). Resubmit
+      with build 3 (`v1.0.0+3` tag → Codemagic)
 
 ## Post-launch
 

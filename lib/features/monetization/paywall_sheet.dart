@@ -2,6 +2,7 @@ import 'package:cc_core/cc_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/links.dart';
 import 'free_limit.dart';
 import 'monetization_providers.dart';
 
@@ -26,6 +27,7 @@ class _PaywallSheet extends ConsumerWidget {
     final lifetimePrice = ref.watch(_lifetimePriceProvider).value;
     final monthlyPrice = ref.watch(_monthlyPriceProvider).value;
     final service = ref.read(entitlementServiceProvider);
+    final open = ref.read(linkOpenerProvider);
 
     // Close with success the moment the entitlement lands.
     ref.listen(isProProvider, (_, next) {
@@ -89,6 +91,21 @@ class _PaywallSheet extends ConsumerWidget {
                 ? 'Or month to month'
                 : 'Or month to month · $monthlyPrice',
           ),
+        ),
+        // App Store guideline 3.1.2: auto-renewable subscriptions must link
+        // to the Terms of Use and privacy policy from the purchase screen.
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextButton(
+              onPressed: () => open(PocketCurioLinks.terms),
+              child: const Text('Terms of Use'),
+            ),
+            TextButton(
+              onPressed: () => open(PocketCurioLinks.privacy),
+              child: const Text('Privacy Policy'),
+            ),
+          ],
         ),
       ],
       onLater: () => Navigator.of(context).pop(false),

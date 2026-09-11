@@ -10,6 +10,12 @@ abstract final class PocketCurioLinks {
   static final faq = Uri.parse('https://pocketcurio.app/faq/');
   static final userGuide = Uri.parse('https://pocketcurio.app/user-guide/');
   static final privacy = Uri.parse('https://pocketcurio.app/privacy/');
+
+  /// Apple's standard EULA — what the App Store listing declares, and
+  /// what guideline 3.1.2 wants linked from the paywall and description.
+  static final terms = Uri.parse(
+    'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/',
+  );
 }
 
 /// Opens [url] outside the app; false when nothing could handle it.

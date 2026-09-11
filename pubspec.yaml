@@ -1,7 +1,7 @@
 name: pocket_curio
 description: "Pocket Curio — a souvenir is a place + a memory. A private, on-device souvenir collection journal. © Code Cowboys LLC."
 publish_to: 'none'
-version: 1.0.0+2
+version: 1.0.0+3
 
 environment:
   # Matches cc_core's floor — all CC apps build with the same local SDK

@@ -171,7 +171,14 @@ period to fit; or "Photograph the shelf. Map it." (29))
 those already.)
 
 **Description:** the Play full description above, minus the Markdown
-bold markers. **Category:** Lifestyle; secondary Travel.
+bold markers, plus two trailing lines App Review requires for the
+auto-renewable subscription (guideline 3.1.2 — it rejected 1.0 (2) for
+lacking the EULA link, 2026-09-10):
+
+> Privacy Policy: https://pocketcurio.app/privacy/
+> Terms of Use (EULA): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+
+**Category:** Lifestyle; secondary Travel.
 
 **Support URL:** https://pocketcurio.app/help/ · **Marketing URL:**
 https://pocketcurio.app/ · **Privacy URL:** https://pocketcurio.app/privacy/
