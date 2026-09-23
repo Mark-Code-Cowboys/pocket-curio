@@ -141,9 +141,12 @@ Work top to bottom; nothing ships with an unchecked box above it.
 - [x] `v1.0.1+5` tagged → Codemagic build #7 → TestFlight build 5
 - [x] App Store Connect: version 1.0.1 created, What's New pasted from
       `docs/release-notes.md`, saved
-- [ ] App Store Connect: attach build 5, Add for Review, submit
-- [ ] Play Console: Production → Create release → upload the AAB, paste
-      the Play notes, Send for review
+- [x] App Store Connect: build 5 attached, submitted 2026-09-22 9:19 PM
+      (1.0.1 Ready for Review)
+- [x] Play Console: AAB uploaded by hand (landed in the library, not the
+      draft — attach via Add from library, dismiss the "version code 5
+      already used" row), release 5 (1.0.1) named + notes pasted, full
+      rollout sent for review 2026-09-22 (Changes in review)
 
 ## Post-launch
 
