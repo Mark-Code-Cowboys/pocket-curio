@@ -6,6 +6,23 @@ each release live here so the two stores say the same thing.
 
 ---
 
+## 1.0.1 (build 5) — add-screen layout fix
+
+Ships the paywall Terms of Use / Privacy Policy links from build 3 to
+Play as well (Play's 1.0.0 was version code 1, built before that change).
+
+### Google Play
+
+> • Adding a souvenir on a narrower phone: the Country field and the fifth rating star no longer run off the right edge. Country has its own line and the stars sit under the rating label.
+> • Terms of Use and Privacy Policy links on the Pro screen.
+
+### App Store
+
+> • Adding a souvenir on a narrower phone: the Country field and the fifth rating star no longer run off the right edge. Country has its own line and the stars sit under the rating label.
+> • Terms of Use and Privacy Policy links on the Pro screen.
+
+---
+
 ## 1.0.0 (build 1) — first release
 
 ### Google Play (477 / 500)
