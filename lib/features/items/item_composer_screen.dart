@@ -398,15 +398,15 @@ class _ItemComposerScreenState extends ConsumerState<ItemComposerScreen> {
             textCapitalization: TextCapitalization.characters,
           ),
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: TextFormField(
-            controller: _country,
-            decoration: const InputDecoration(labelText: 'Country'),
-            textCapitalization: TextCapitalization.characters,
-          ),
-        ),
       ],
+    ),
+    const SizedBox(height: 12),
+    // Country gets its own line: three fields across ran the country off
+    // the right edge on narrower iPhones (user report, Sep 2026).
+    TextFormField(
+      controller: _country,
+      decoration: const InputDecoration(labelText: 'Country'),
+      textCapitalization: TextCapitalization.characters,
     ),
     const SizedBox(height: 12),
     ListTile(
@@ -444,10 +444,13 @@ class _ItemComposerScreenState extends ConsumerState<ItemComposerScreen> {
       textCapitalization: TextCapitalization.words,
     ),
     const SizedBox(height: 16),
-    Row(
+    // Label above the stars, not beside them — side by side, the fifth
+    // star was clipped off-screen on narrower iPhones.
+    Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('How much do you love it?'),
-        const SizedBox(width: 12),
+        const SizedBox(height: 8),
         RatingStars(
           rating: _rating,
           onChanged: (r) => setState(() => _rating = r),
