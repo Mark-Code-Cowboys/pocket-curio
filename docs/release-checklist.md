@@ -125,6 +125,25 @@ Work top to bottom; nothing ships with an unchecked box above it.
       Privacy Policy links (same fix as Table Encore 1.3.1). Resubmitted
       2026-09-10 8:52 PM with build 3 (`v1.0.0+3` → Codemagic → TestFlight
       in ~10 min); version + both IAPs + group all Waiting for Review
+- [x] App Store: 1.0 (3) approved and **Ready for Distribution** (live
+      as of 2026-09-22)
+
+## 1.0.1 (build 5) — 2026-09-22
+
+- [x] Fix: composer Country field on its own line, stars under the rating
+      label (iPhone user report: both ran off the right edge). Shipped as
+      1.0.1 because App Store Connect won't take a second release under
+      1.0.0; `v1.0.0+4` was tagged first and its build 4 sits unused in
+      TestFlight
+- [x] `flutter build appbundle --release` → version code 5, upload-key
+      signed, copied to `~/Downloads/pocket-curio-1.0.1+5.aab` (76 MB,
+      manual upload — over the browser tool's 10 MB cap)
+- [x] `v1.0.1+5` tagged → Codemagic build #7 → TestFlight build 5
+- [x] App Store Connect: version 1.0.1 created, What's New pasted from
+      `docs/release-notes.md`, saved
+- [ ] App Store Connect: attach build 5, Add for Review, submit
+- [ ] Play Console: Production → Create release → upload the AAB, paste
+      the Play notes, Send for review
 
 ## Post-launch
 
